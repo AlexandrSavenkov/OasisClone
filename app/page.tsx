@@ -1,0 +1,656 @@
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import { Search, ShoppingCart, Phone, MessageCircle, ChevronDown, ArrowUpDown, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useCart } from "@/hooks/useCart"
+import { useLocale } from "@/contexts/LocaleContext"
+import { usePathname } from "next/navigation"
+import { fetchAllProducts, searchProducts, type Product } from "@/lib/api"
+
+const brands = [
+  { name: "Lacnor", nameAr: "لاكنور", logo: "/lacnor-logo-blue.png" },
+  { name: "Oasis", nameAr: "واحة", logo: "/oasis-logo-blue.png" },
+  { name: "Blu", nameAr: "بلو", logo: "/blu-logo-blue-text.png" },
+  { name: "Melco", nameAr: "ميلكو", logo: "/melco-green-logo.png" },
+  { name: "Safa", nameAr: "صفا", logo: "/placeholder.svg?height=80&width=120" },
+]
+
+const heroSlides = [
+  {
+    title: "Hero Slide 1",
+    titleAr: "الشريحة الرئيسية 1",
+    subtitle: "Subtitle for Hero Slide 1",
+    subtitleAr: "العنوان الفرعي للشريحة الرئيسية 1",
+    image: "/placeholder.svg",
+    isNew: true,
+  },
+  {
+    title: "Hero Slide 2",
+    titleAr: "الشريحة الرئيسية 2",
+    subtitle: "Subtitle for Hero Slide 2",
+    subtitleAr: "العنوان الفرعي للشريحة الرئيسية 2",
+    image: "/placeholder.svg",
+    isNew: false,
+  },
+]
+
+type SortOption = "featured" | "priceLowHigh" | "priceHighLow" | "newest" | "name"
+
+export default function OasisDirectHomePage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false)
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [sortBy, setSortBy] = useState<SortOption>("featured")
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [productQuantities, setProductQuantities] = useState<Record<string | number, number>>({})
+  const searchRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const languageRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+
+  const { state: cartState, dispatch: cartDispatch } = useCart()
+  const { locale, setLocale, t, isRTL } = useLocale()
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      setIsLoading(true)
+      try {
+        console.log("[v0] Loading products from API")
+        const apiProducts = await fetchAllProducts()
+        console.log("[v0] Products loaded:", apiProducts.length)
+        setProducts(apiProducts)
+        setFilteredProducts(sortProducts(apiProducts, sortBy))
+      } catch (error) {
+        console.error("[v0] Error loading products:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query)
+
+    if (query.trim()) {
+      console.log("[v0] Searching for:", query)
+      const searchResults = await searchProducts(query)
+      const sorted = sortProducts(searchResults, sortBy)
+      setFilteredProducts(sorted)
+    } else {
+      const sorted = sortProducts(products, sortBy)
+      setFilteredProducts(sorted)
+    }
+  }
+
+  const sortProducts = (products: Product[], sortOption: SortOption) => {
+    const sorted = [...products]
+
+    switch (sortOption) {
+      case "featured":
+        return sorted.sort((a, b) => {
+          if (a.featured && !b.featured) return -1
+          if (!a.featured && b.featured) return 1
+          return 0
+        })
+      case "priceLowHigh":
+        return sorted.sort((a, b) => a.price - b.price)
+      case "priceHighLow":
+        return sorted.sort((a, b) => b.price - a.price)
+      case "newest":
+        return sorted.sort((a, b) => new Date(b.dateAdded || 0).getTime() - new Date(a.dateAdded || 0).getTime())
+      case "name":
+        return sorted.sort((a, b) => {
+          const nameA = isRTL ? a.nameAr || a.name : a.name
+          const nameB = isRTL ? b.nameAr || b.name : b.name
+          return nameA.localeCompare(nameB)
+        })
+      default:
+        return sorted
+    }
+  }
+
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort)
+    const sorted = sortProducts(filteredProducts, newSort)
+    setFilteredProducts(sorted)
+  }
+
+  const handleAddToCart = (product: Product) => {
+    const quantity = productQuantities[product.id] || 1
+    for (let i = 0; i < quantity; i++) {
+      cartDispatch({
+        type: "ADD_ITEM",
+        payload: {
+          id: product.id,
+          name: isRTL ? product.nameAr || product.name : product.name,
+          price: product.price,
+          originalPrice: product.originalPrice || undefined,
+          image: product.image,
+          category: product.category,
+          brand: product.brand,
+        },
+      })
+    }
+  }
+
+  const handleQuantityChange = (productId: string | number, change: number) => {
+    setProductQuantities((prev) => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) + change),
+    }))
+  }
+
+  const handleSearchMouseEnter = () => {
+    setShowSearchDropdown(true)
+  }
+
+  const handleSearchMouseLeave = () => {
+    setTimeout(() => {
+      if (!dropdownRef.current?.matches(":hover") && !searchRef.current?.matches(":hover")) {
+        setShowSearchDropdown(false)
+      }
+    }, 100)
+  }
+
+  const handleDropdownMouseLeave = () => {
+    setShowSearchDropdown(false)
+  }
+
+  const handleLanguageMouseLeave = () => {
+    setTimeout(() => {
+      if (!languageRef.current?.matches(":hover")) {
+        setShowLanguageDropdown(false)
+      }
+    }, 100)
+  }
+
+  return (
+    <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
+      {/* Top Header */}
+      <div className="bg-blue-600 text-white py-2 px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
+          <div className="flex items-center gap-4">
+            <div className="relative" ref={languageRef}>
+              <button
+                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                className="flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+              >
+                <span>{t("header.language")}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {showLanguageDropdown && (
+                <div
+                  className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[120px]"
+                  onMouseLeave={() =>
+                    setTimeout(() => {
+                      if (!languageRef.current?.matches(":hover")) {
+                        setShowLanguageDropdown(false)
+                      }
+                    }, 100)
+                  }
+                >
+                  <button
+                    onClick={() => {
+                      setLocale("en")
+                      setShowLanguageDropdown(false)
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 cursor-pointer ${
+                      locale === "en" ? "text-blue-600 font-medium" : "text-gray-700"
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocale("ar")
+                      setShowLanguageDropdown(false)
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 cursor-pointer ${
+                      locale === "ar" ? "text-blue-600 font-medium" : "text-gray-700"
+                    }`}
+                  >
+                    العربية
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <Phone className="w-4 h-4 cursor-pointer hover:text-blue-200" />
+            <MessageCircle className="w-4 h-4 cursor-pointer hover:text-blue-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Link href="/">
+                <img src="/placeholder.svg?height=50&width=120" alt="Oasis Direct" className="h-12 cursor-pointer" />
+              </Link>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 max-w-2xl mx-8 relative">
+              <div
+                ref={searchRef}
+                className="relative"
+                onMouseEnter={() => setShowSearchDropdown(true)}
+                onMouseLeave={() =>
+                  setTimeout(() => {
+                    if (!dropdownRef.current?.matches(":hover") && !searchRef.current?.matches(":hover")) {
+                      setShowSearchDropdown(false)
+                    }
+                  }, 100)
+                }
+              >
+                <Input
+                  type="text"
+                  placeholder={t("header.search.placeholder")}
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg"
+                />
+                <Button
+                  size="sm"
+                  className="absolute right-1 top-1 bottom-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {showSearchDropdown && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-96 overflow-y-auto"
+                  onMouseLeave={() => setShowSearchDropdown(false)}
+                >
+                  {/* Show All Button */}
+                  <div className="p-3 border-b border-gray-100">
+                    <Link href="/search">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-left p-3 hover:bg-blue-50 rounded-lg cursor-pointer"
+                      >
+                        <span className="text-blue-600 font-medium">
+                          {t("search.showAll")} ({filteredProducts.length} {t("search.results")})
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-blue-600 ${isRTL ? "rotate-90" : "rotate-[-90deg]"}`} />
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {/* Product Suggestions */}
+                  <div className="py-2">
+                    {filteredProducts.slice(0, 6).map((product) => (
+                      <Link key={product.id} href={`/product/${product.id}`}>
+                        <div className="px-3 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 transition-colors">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={isRTL ? product.nameAr || product.name : product.name}
+                            className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
+                              {isRTL ? product.nameAr || product.name : product.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-sm font-semibold text-blue-600">AED {product.price}</span>
+                              {product.originalPrice && (
+                                <span className="text-xs text-gray-500 line-through">AED {product.originalPrice}</span>
+                              )}
+                              {product.discount && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                  {product.discount}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          {product.isNew && <Badge className="bg-red-500 text-white text-xs">{t("product.new")}</Badge>}
+                        </div>
+                      </Link>
+                    ))}
+
+                    {filteredProducts.length === 0 && !isLoading && (
+                      <div className="px-3 py-6 text-center text-gray-500">
+                        <p>{t("search.noResults")}</p>
+                        <p className="text-sm mt-1">{t("search.tryAgain")}</p>
+                      </div>
+                    )}
+
+                    {isLoading && (
+                      <div className="px-3 py-6 text-center text-gray-500">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                        <p>Loading products...</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cart */}
+            <div className="flex items-center gap-4">
+              <Link href="/cart">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 bg-transparent cursor-pointer hover:bg-gray-50"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t("header.cart")}</span>
+                  <Badge variant="secondary" className="ml-1">
+                    {cartState.itemCount}
+                  </Badge>
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation Menu */}
+      <nav className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-center gap-8 py-4">
+            <Link
+              href="/s/water"
+              className={`flex items-center gap-2 ${
+                pathname === "/s/water" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+              } cursor-pointer`}
+            >
+              <img src="/placeholder.svg?height=24&width=24" alt="Water" className="w-6 h-6" />
+              <span className="font-medium">{t("nav.water")}</span>
+            </Link>
+            <Link
+              href="/s/juice"
+              className={`flex items-center gap-2 ${
+                pathname === "/s/juice" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+              } cursor-pointer`}
+            >
+              <img src="/placeholder.svg?height=24&width=24" alt="Juice" className="w-6 h-6" />
+              <span className="font-medium">{t("nav.juice")}</span>
+            </Link>
+            <Link
+              href="/s/dairy"
+              className={`flex items-center gap-2 ${
+                pathname === "/s/dairy" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+              } cursor-pointer`}
+            >
+              <img src="/placeholder.svg?height=24&width=24" alt="Dairy" className="w-6 h-6" />
+              <span className="font-medium">{t("nav.dairy")}</span>
+            </Link>
+            <Link
+              href="/s/accessories"
+              className={`flex items-center gap-2 ${
+                pathname === "/s/accessories" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
+              } cursor-pointer`}
+            >
+              <img src="/placeholder.svg?height=24&width=24" alt="Accessories" className="w-6 h-6" />
+              <span className="font-medium">{t("nav.accessories")}</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Carousel */}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="relative overflow-hidden rounded-lg">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            >
+              {heroSlides.map((slide, index) => (
+                <div key={index} className="w-full flex-shrink-0">
+                  <div className="relative h-64 md:h-80 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg overflow-hidden">
+                    <img
+                      src={slide.image || "/placeholder.svg"}
+                      alt={isRTL ? slide.titleAr : slide.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-20" />
+                    <div
+                      className={`absolute inset-0 flex items-center ${isRTL ? "justify-start pl-8 md:pl-16" : "justify-end pr-8 md:pr-16"}`}
+                    >
+                      <div className={`${isRTL ? "text-left" : "text-right"} text-white`}>
+                        {slide.isNew && <Badge className="bg-red-500 text-white mb-2">{t("product.new")}</Badge>}
+                        <h2 className="text-2xl md:text-4xl font-bold mb-2">{isRTL ? slide.titleAr : slide.title}</h2>
+                        <p className="text-lg md:text-xl italic">{isRTL ? slide.subtitleAr : slide.subtitle}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Carousel Indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-colors cursor-pointer ${
+                    index === currentSlide ? "bg-white" : "bg-white/50"
+                  }`}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Shop By Brand */}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("section.shopByBrand")}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {brands.map((brand, index) => (
+              <div key={index} className="text-center">
+                <Link href={`/b/${brand.name.toLowerCase()}`} className="block cursor-pointer">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer">
+                    <img
+                      src={brand.logo || "/placeholder.svg"}
+                      alt={isRTL ? brand.nameAr : brand.name}
+                      className="w-full h-16 object-contain mb-4"
+                    />
+                    <p className="font-medium text-gray-900">{isRTL ? brand.nameAr : brand.name}</p>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Special Promotions */}
+      <section className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">{t("section.specialPromotions")}</h2>
+
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-gray-500" />
+              <Select value={sortBy} onValueChange={(value: SortOption) => handleSortChange(value)}>
+                <SelectTrigger className="w-48 cursor-pointer">
+                  <SelectValue placeholder={t("product.sortBy")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="featured" className="cursor-pointer">
+                    {t("product.sortBy.featured")}
+                  </SelectItem>
+                  <SelectItem value="priceLowHigh" className="cursor-pointer">
+                    {t("product.sortBy.priceLowHigh")}
+                  </SelectItem>
+                  <SelectItem value="priceHighLow" className="cursor-pointer">
+                    {t("product.sortBy.priceHighLow")}
+                  </SelectItem>
+                  <SelectItem value="newest" className="cursor-pointer">
+                    {t("product.sortBy.newest")}
+                  </SelectItem>
+                  <SelectItem value="name" className="cursor-pointer">
+                    {t("product.sortBy.name")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading products...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <Link href={`/product/${product.id}`}>
+                      <div className="relative mb-4">
+                        <img
+                          src={product.image || "/placeholder.svg"}
+                          alt={isRTL ? product.nameAr || product.name : product.name}
+                          className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        />
+                        {product.isNew && (
+                          <Badge className="absolute top-2 right-2 bg-red-500 text-white">{t("product.new")}</Badge>
+                        )}
+                        {product.discount && (
+                          <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
+                        )}
+                      </div>
+                    </Link>
+
+                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 cursor-pointer">
+                      {isRTL ? product.nameAr || product.name : product.name}
+                    </h3>
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg font-bold text-blue-600">AED {product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="cursor-pointer bg-transparent"
+                          onClick={() => handleQuantityChange(product.id, -1)}
+                        >
+                          -
+                        </Button>
+                        <span className="px-3 py-1 border rounded">{productQuantities[product.id] || 1}</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="cursor-pointer bg-transparent"
+                          onClick={() => handleQuantityChange(product.id, 1)}
+                        >
+                          +
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        {t("product.addToCart")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-8">
+            <Link href="/search">
+              <Button variant="outline" size="lg" className="cursor-pointer bg-transparent">
+                {t("product.viewAll")}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4">{t("footer.getApp")}</h3>
+              <p className="text-blue-100 mb-4">{t("footer.appDescription")}</p>
+              <div className="space-y-2">
+                <img src="/placeholder.svg?height=40&width=120" alt="Google Play" className="h-10 cursor-pointer" />
+                <img src="/placeholder.svg?height=40&width=120" alt="App Store" className="h-10 cursor-pointer" />
+                <img src="/placeholder.svg?height=40&width=120" alt="AppGallery" className="h-10 cursor-pointer" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <img src="/placeholder.svg?height=30&width=40" alt="Visa" className="h-8" />
+                <img src="/placeholder.svg?height=30&width=40" alt="Mastercard" className="h-8" />
+              </div>
+              <div className="flex gap-3 mt-4">
+                <a
+                  href="https://facebook.com/oasisdirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-100 hover:text-white cursor-pointer"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                <a
+                  href="https://instagram.com/oasisdirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-100 hover:text-white cursor-pointer"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987c6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297L3.182 17.635l1.935-1.935c.807.807 1.958 1.297 3.323 1.297c2.58 0 4.677-2.097 4.677-4.677s-2.097-4.677-4.677-4.677s-4.677 2.097-4.677 4.677c0 1.365.49 2.516 1.297 3.323L3.125 17.578l1.944-1.944c.875.807 2.026 1.297 3.323 1.297z" />
+                  </svg>
+                </a>
+                <a
+                  href="https://twitter.com/oasisdirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-100 hover:text-white cursor-pointer"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
