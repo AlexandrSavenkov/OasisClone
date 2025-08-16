@@ -1,19 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 const BASE_URL = "https://oasisdirect.ae/api/en"
-const API_VERSION = "v=b2c3eQE7EgB9KeYP-kRG2"
+const API_VERSION = "__v__=b2c3eQE7EgB9KeYP-kRG2"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const type = searchParams.get("type") // 's' for category, 'b' for brand
+  const type = searchParams.get("type") // 's' for category, 'b' for brand, 'all' for all products
   const name = searchParams.get("name") // category or brand name
+  const page = searchParams.get("page") // page number for pagination
 
-  if (!type || !name) {
-    return NextResponse.json({ error: "Missing type or name parameter" }, { status: 400 })
+  if (!type || (type !== "all" && !name)) {
+    return NextResponse.json({ error: "Missing required parameters" }, { status: 400 })
   }
 
   try {
-    const url = `${BASE_URL}/${type}/${name}?${API_VERSION}`
+    let url: string
+
+    if (type === "all") {
+      // All products pagination endpoint: /s/1?q=&page=X&__v__=...
+      const pageParam = page ? `&page=${page}` : ""
+      url = `${BASE_URL}/s/1?q=${pageParam}&${API_VERSION}`
+    } else {
+      // Category or brand endpoints: /s/category or /b/brand
+      url = `${BASE_URL}/${type}/${name}?${API_VERSION}`
+    }
+
     console.log("[v0] Proxy fetching from:", url)
 
     const response = await fetch(url, {
