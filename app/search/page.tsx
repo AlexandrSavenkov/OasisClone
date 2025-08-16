@@ -411,71 +411,7 @@ export default function SearchPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-blue-600 text-white mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">GET THE APP</h3>
-              <p className="text-blue-100 mb-4">
-                Oasis Direct App is now available in Google Play, App Store, and AppGallery. Get it Now!
-              </p>
-              <div className="space-y-2">
-                <img src="/placeholder.svg?height=40&width=120" alt="Google Play" className="h-10" />
-                <img src="/placeholder.svg?height=40&width=120" alt="App Store" className="h-10" />
-                <img src="/placeholder.svg?height=40&width=120" alt="AppGallery" className="h-10" />
-              </div>
-              <div className="flex gap-2 mt-4">
-                <img src="/placeholder.svg?height=30&width=40" alt="Visa" className="h-8" />
-                <img src="/placeholder.svg?height=30&width=40" alt="Mastercard" className="h-8" />
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">CONTACT INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>
-                  <strong>ADDRESS</strong>
-                </p>
-                <p>Oasis Pure Water Factory LLC Jebel Ali Dubai, United Arab Emirates</p>
-                <p>
-                  <strong>TEL</strong>
-                </p>
-                <p>600522261</p>
-                <p>
-                  <strong>EMAIL</strong>
-                </p>
-                <p>Oasis.H2o@Nfpc.Net</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">COLLECTIONS</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>Water</p>
-                <p>Juice</p>
-                <p>Dairy</p>
-                <p>Accessories</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>Our Oasis Website</p>
-                <p>About Us</p>
-                <p>Contact Us</p>
-                <p>Terms And Conditions</p>
-                <p>Privacy Policy</p>
-                <p>FAQs</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-blue-500 mt-8 pt-8 text-center text-blue-100">
-            <p>Copyright © Oasis Direct. All Rights Reserved. - 2025</p>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

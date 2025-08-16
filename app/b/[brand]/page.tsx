@@ -470,46 +470,7 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
         </div>
       </div>
 
-      <footer className="bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">GET THE APP</h3>
-              <p className="text-blue-100 mb-4">
-                Oasis Direct App is now available in Google Play App Store and Apple App Store
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">CONTACT INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>ADDRESS:</p>
-                <p>Oasis Water Factory LLC, plot# 48 Industrial Area 18, Sharjah, UAE</p>
-                <p>TEL: 065434343</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">COLLECTIONS</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>Water</p>
-                <p>Juice</p>
-                <p>Dairy</p>
-                <p>Accessories</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>Our Oasis Website</p>
-                <p>About Us</p>
-                <p>Contact Us</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-blue-500 mt-8 pt-8 text-center text-blue-100">
-            <p>Copyright © Oasis Direct. All Rights Reserved - 2024</p>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Roboto } from "next/font/google"
 import { CartProvider } from "@/hooks/useCart"
 import { LocaleProvider } from "@/contexts/LocaleContext"
+import Footer from "@/components/Footer"
 import "./globals.css"
 
 const roboto = Roboto({
@@ -33,7 +34,10 @@ export default function RootLayout({
       </head>
       <body>
         <LocaleProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            {children}
+            <Footer />
+          </CartProvider>
         </LocaleProvider>
       </body>
     </html>
