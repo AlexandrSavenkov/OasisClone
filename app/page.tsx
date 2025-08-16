@@ -2,7 +2,17 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Search, ShoppingCart, Phone, MessageCircle, ChevronDown, ArrowUpDown, Loader2 } from "lucide-react"
+import {
+  Search,
+  ShoppingCart,
+  Phone,
+  MessageCircle,
+  ChevronDown,
+  ArrowUpDown,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,11 +24,31 @@ import { usePathname } from "next/navigation"
 import { fetchAllProducts, searchProducts, type Product } from "@/lib/api"
 
 const brands = [
-  { name: "Lacnor", nameAr: "لاكنور", logo: "/lacnor-logo-blue.png" },
-  { name: "Oasis", nameAr: "واحة", logo: "/oasis-logo-blue.png" },
-  { name: "Blu", nameAr: "بلو", logo: "/blu-logo-blue-text.png" },
-  { name: "Melco", nameAr: "ميلكو", logo: "/melco-green-logo.png" },
-  { name: "Safa", nameAr: "صفا", logo: "/placeholder.svg?height=80&width=120" },
+  {
+    name: "Lacnor",
+    nameAr: "لاكنور",
+    logo: "https://nfpc.imgix.net/brands/images/1643902462887_image.png?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    name: "Oasis",
+    nameAr: "واحة",
+    logo: "https://nfpc.imgix.net/brands/images/1643902490725_image.png?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    name: "Blu",
+    nameAr: "بلو",
+    logo: "https://nfpc.imgix.net/brands/images/1643902555681_image.png?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    name: "Melco",
+    nameAr: "ميلكو",
+    logo: "https://nfpc.imgix.net/brands/images/1643902514779_image.png?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    name: "Safa",
+    nameAr: "صفا",
+    logo: "https://nfpc.imgix.net/brands/images/1643902535448_image.png?fit=contain&auto=format%2Ccompress&w=3840",
+  },
 ]
 
 const heroSlides = [
@@ -84,12 +114,13 @@ export default function OasisDirectHomePage() {
     loadProducts()
   }, [])
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
+  }
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query)
@@ -253,7 +284,11 @@ export default function OasisDirectHomePage() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/">
-                <img src="/placeholder.svg?height=50&width=120" alt="Oasis Direct" className="h-12 cursor-pointer" />
+                <img
+                  src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                  alt="Oasis Direct"
+                  className="h-12 cursor-pointer"
+                />
               </Link>
             </div>
 
@@ -280,7 +315,7 @@ export default function OasisDirectHomePage() {
                 />
                 <Button
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent hover:bg-transparent text-gray-600 hover:text-blue-600 border-0 shadow-none p-2"
                 >
                   <Search className="w-4 h-4" />
                 </Button>
@@ -386,7 +421,11 @@ export default function OasisDirectHomePage() {
                 pathname === "/s/water" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
               } cursor-pointer`}
             >
-              <img src="/placeholder.svg?height=24&width=24" alt="Water" className="w-6 h-6" />
+              <img
+                src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Water"
+                className="w-6 h-6"
+              />
               <span className="font-medium">{t("nav.water")}</span>
             </Link>
             <Link
@@ -395,7 +434,11 @@ export default function OasisDirectHomePage() {
                 pathname === "/s/juice" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
               } cursor-pointer`}
             >
-              <img src="/placeholder.svg?height=24&width=24" alt="Juice" className="w-6 h-6" />
+              <img
+                src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Juice"
+                className="w-6 h-6"
+              />
               <span className="font-medium">{t("nav.juice")}</span>
             </Link>
             <Link
@@ -404,7 +447,11 @@ export default function OasisDirectHomePage() {
                 pathname === "/s/dairy" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
               } cursor-pointer`}
             >
-              <img src="/placeholder.svg?height=24&width=24" alt="Dairy" className="w-6 h-6" />
+              <img
+                src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Dairy"
+                className="w-6 h-6"
+              />
               <span className="font-medium">{t("nav.dairy")}</span>
             </Link>
             <Link
@@ -413,7 +460,11 @@ export default function OasisDirectHomePage() {
                 pathname === "/s/accessories" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
               } cursor-pointer`}
             >
-              <img src="/placeholder.svg?height=24&width=24" alt="Accessories" className="w-6 h-6" />
+              <img
+                src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Accessories"
+                className="w-6 h-6"
+              />
               <span className="font-medium">{t("nav.accessories")}</span>
             </Link>
           </div>
@@ -423,22 +474,41 @@ export default function OasisDirectHomePage() {
       {/* Hero Carousel */}
       <section className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="relative overflow-hidden rounded-lg">
+          <div className="relative overflow-hidden rounded-lg h-[500px]">
             <div
-              className="flex transition-transform duration-500 ease-in-out"
+              className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {heroSlides.map((slide, index) => (
-                <div key={index} className="w-full flex-shrink-0">
-                  <div className="relative h-64 md:h-80 rounded-lg overflow-hidden">
+                <div key={index} className="w-full flex-shrink-0 h-full">
+                  <div className="relative h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-lg overflow-hidden">
                     <img
                       src={slide.image || "/placeholder.svg"}
-                      alt={`Hero slide ${index + 1}`}
+                      alt={`Slide ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="absolute bottom-4 left-4 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/80 hover:bg-white border-white/50 cursor-pointer p-2"
+                onClick={prevSlide}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/80 hover:bg-white border-white/50 cursor-pointer p-2"
+                onClick={nextSlide}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
 
             {/* Carousel Indicators */}
@@ -458,8 +528,23 @@ export default function OasisDirectHomePage() {
       </section>
 
       {/* Shop By Brand */}
-      <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <section className="relative" style={{ backgroundColor: "#EEF7F1" }}>
+        {/* Floating Bubbles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="jss111 jss113"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 27}s`,
+                animationDuration: `${20 + Math.random() * 14}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("section.shopByBrand")}</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             {brands.map((brand, index) => (

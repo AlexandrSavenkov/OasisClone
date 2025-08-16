@@ -10,7 +10,17 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, CreditCard, MapPin, User, Loader2, CheckCircle } from "lucide-react"
+import {
+  ArrowLeft,
+  CreditCard,
+  MapPin,
+  User,
+  Loader2,
+  CheckCircle,
+  Phone,
+  MessageCircle,
+  ChevronDown,
+} from "lucide-react"
 import { useCart } from "@/hooks/useCart"
 import { useLocale } from "@/contexts/LocaleContext"
 
@@ -38,7 +48,7 @@ interface FormErrors {
 }
 
 export default function CheckoutPage() {
-  const { state: cartState, dispatch: cartDispatch } = useCart() // Added dispatch for cart clearing
+  const { state: cartState, dispatch: cartDispatch } = useCart()
   const { t, isRTL } = useLocale()
   const router = useRouter()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -144,26 +154,90 @@ export default function CheckoutPage() {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      {/* ... existing header code ... */}
-      <header className="bg-blue-600 text-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 cursor-pointer">
-              <Image src="/oasis-logo-white.png" alt="Oasis Direct" width={120} height={40} />
+      {/* Top Header */}
+      <div className="bg-blue-600 text-white py-2 px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
+          <div className="flex items-center gap-4">
+            <span>English</span>
+            <ChevronDown className="w-4 h-4" />
+          </div>
+          <div className="flex items-center gap-4">
+            <Phone className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header */}
+      <header className="shadow-sm" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-center">
+            <Link href="/" className="flex items-center cursor-pointer">
+              <Image
+                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                alt="Oasis Direct"
+                width={120}
+                height={40}
+                className="h-12 w-auto"
+              />
             </Link>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm">Secure Checkout</span>
-            </div>
           </div>
         </div>
       </header>
 
-      {/* ... existing breadcrumb code ... */}
+      {/* Category Navigation */}
+      <nav className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-center gap-8 py-4">
+            <Link href="/s/water" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
+              <Image
+                src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Water"
+                width={24}
+                height={24}
+              />
+              <span className="font-medium">Water</span>
+            </Link>
+            <Link href="/s/juice" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
+              <Image
+                src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Juice"
+                width={24}
+                height={24}
+              />
+              <span className="font-medium">Juice</span>
+            </Link>
+            <Link href="/s/dairy" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
+              <Image
+                src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Dairy"
+                width={24}
+                height={24}
+              />
+              <span className="font-medium">Dairy</span>
+            </Link>
+            <Link
+              href="/s/accessories"
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer"
+            >
+              <Image
+                src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                alt="Accessories"
+                width={24}
+                height={24}
+              />
+              <span className="font-medium">Accessories</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Link href="/" className="hover:text-blue-600 cursor-pointer">
-              Home
+              Oasis Direct
             </Link>
             <span>/</span>
             <Link href="/cart" className="hover:text-blue-600 cursor-pointer">

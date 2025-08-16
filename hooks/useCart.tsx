@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { createContext, useContext, useReducer, type ReactNode } from "react"
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from "react"
 
 interface CartItem {
   id: number
@@ -11,6 +10,7 @@ interface CartItem {
   image: string
   quantity: number
   brand: string
+  category?: string
 }
 
 interface CartState {
@@ -24,6 +24,7 @@ type CartAction =
   | { type: "REMOVE_ITEM"; payload: number }
   | { type: "UPDATE_QUANTITY"; payload: { id: number; quantity: number } }
   | { type: "CLEAR_CART" }
+  | { type: "LOAD_CART"; payload: CartState }
 
 const CartContext = createContext<{
   state: CartState
@@ -89,6 +90,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         itemCount: 0,
       }
 
+    case "LOAD_CART":
+      return action.payload
+
     default:
       return state
   }
@@ -100,6 +104,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     total: 0,
     itemCount: 0,
   })
+
+  useEffect(() => {
+    const savedCart = localStorage.getItem("oasis-cart")
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart)
+        dispatch({ type: "LOAD_CART", payload: parsedCart })
+      } catch (error) {
+        console.error("Failed to load cart from localStorage:", error)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("oasis-cart", JSON.stringify(state))
+  }, [state])
 
   return <CartContext.Provider value={{ state, dispatch }}>{children}</CartContext.Provider>
 }

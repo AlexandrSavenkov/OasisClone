@@ -133,7 +133,11 @@ export default function CategoryPage({ params }: { params: { category: string } 
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <a href="/" className="cursor-pointer">
-                <img src="/placeholder.svg?height=50&width=120" alt="Oasis Direct" className="h-12" />
+                <img
+                  src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                  alt="Oasis Direct"
+                  className="h-12"
+                />
               </a>
             </div>
 
@@ -143,28 +147,44 @@ export default function CategoryPage({ params }: { params: { category: string } 
                   href="/s/water"
                   className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "water" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Water" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Water"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.water")}</span>
                 </a>
                 <a
                   href="/s/juice"
                   className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "juice" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Juice" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Juice"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.juice")}</span>
                 </a>
                 <a
                   href="/s/dairy"
                   className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "dairy" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Dairy" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Dairy"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.dairy")}</span>
                 </a>
                 <a
                   href="/s/accessories"
                   className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "accessories" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Accessories" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Accessories"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.accessories")}</span>
                 </a>
               </div>
@@ -190,7 +210,11 @@ export default function CategoryPage({ params }: { params: { category: string } 
               href="/"
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
             >
-              <img src="/oasis-logo-blue.png" alt="Oasis Direct" className="w-6 h-6" />
+              <img
+                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                alt="Oasis Direct"
+                className="w-6 h-6"
+              />
               <span className="font-medium">Oasis Direct</span>
             </a>
           </div>
@@ -199,7 +223,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
 
       {/* Category Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: categoryTitle }]} />
+        <Breadcrumb items={[{ label: "Oasis Direct", href: "/" }, { label: categoryTitle }]} />
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-64 flex-shrink-0">

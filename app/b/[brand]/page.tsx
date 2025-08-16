@@ -19,35 +19,35 @@ const brandInfo = {
   lacnor: {
     name: "Lacnor",
     nameAr: "لاكنور",
-    logo: "/lacnor-logo-blue.png",
+    logo: "https://nfpc.imgix.net/brands/images/1643902462887_image.png?fit=contain&auto=format%2Ccompress&w=3840",
     description: "Premium dairy and juice products from the UAE",
     descriptionAr: "منتجات الألبان والعصائر المميزة من دولة الإمارات العربية المتحدة",
   },
   oasis: {
     name: "Oasis",
     nameAr: "واحة",
-    logo: "/oasis-logo-blue.png",
+    logo: "https://nfpc.imgix.net/brands/images/1643902490725_image.png?fit=contain&auto=format%2Ccompress&w=3840",
     description: "Pure water solutions for your home and office",
     descriptionAr: "حلول المياه النقية لمنزلك ومكتبك",
   },
   blu: {
     name: "Blu",
     nameAr: "بلو",
-    logo: "/blu-logo-blue-text.png",
+    logo: "https://nfpc.imgix.net/brands/images/1643902555681_image.png?fit=contain&auto=format%2Ccompress&w=3840",
     description: "Premium bottled water with exceptional purity",
     descriptionAr: "مياه معبأة مميزة بنقاء استثنائي",
   },
   melco: {
     name: "Melco",
     nameAr: "ميلكو",
-    logo: "/melco-green-logo.png",
+    logo: "https://nfpc.imgix.net/brands/images/1643902514779_image.png?fit=contain&auto=format%2Ccompress&w=3840",
     description: "Natural spring water from pristine sources",
     descriptionAr: "مياه ينبوع طبيعية من مصادر نقية",
   },
   safa: {
     name: "Safa",
     nameAr: "صفا",
-    logo: "/placeholder.svg?height=80&width=120",
+    logo: "https://nfpc.imgix.net/brands/images/1643902535448_image.png?fit=contain&auto=format%2Ccompress&w=3840",
     description: "Pure and refreshing water for everyday hydration",
     descriptionAr: "مياه نقية ومنعشة للترطيب اليومي",
   },
@@ -176,7 +176,11 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <a href="/" className="cursor-pointer">
-                <img src="/placeholder.svg?height=50&width=120" alt="Oasis Direct" className="h-12" />
+                <img
+                  src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                  alt="Oasis Direct"
+                  className="h-12"
+                />
               </a>
             </div>
 
@@ -186,28 +190,44 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
                   href="/s/water"
                   className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Water" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Water"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.water")}</span>
                 </a>
                 <a
                   href="/s/juice"
                   className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Juice" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Juice"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.juice")}</span>
                 </a>
                 <a
                   href="/s/dairy"
                   className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Dairy" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Dairy"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.dairy")}</span>
                 </a>
                 <a
                   href="/s/accessories"
                   className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
                 >
-                  <img src="/placeholder.svg?height=24&width=24" alt="Accessories" className="w-5 h-5 md:w-6 md:h-6" />
+                  <img
+                    src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                    alt="Accessories"
+                    className="w-5 h-5 md:w-6 md:h-6"
+                  />
                   <span className="font-medium text-sm md:text-base">{t("nav.accessories")}</span>
                 </a>
               </div>
@@ -238,26 +258,32 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
               href="/"
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
             >
-              <img src="/oasis-logo-blue.png" alt="Oasis Direct" className="w-6 h-6" />
+              <img
+                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                alt="Oasis Direct"
+                className="w-6 h-6"
+              />
               <span className="font-medium">Oasis Direct</span>
             </a>
           </div>
         </div>
       </nav>
 
-      <Breadcrumb
-        items={[
-          {
-            label: "Home",
-            labelAr: "الرئيسية",
-            href: "/",
-          },
-          {
-            label: info.name,
-            labelAr: info.nameAr,
-          },
-        ]}
-      />
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <Breadcrumb
+          items={[
+            {
+              label: "Oasis Direct",
+              labelAr: "أوازيس دايركت",
+              href: "/",
+            },
+            {
+              label: info.name,
+              labelAr: info.nameAr,
+            },
+          ]}
+        />
+      </div>
 
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
