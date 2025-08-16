@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Minus, Plus, X, ArrowLeft, Truck, Shield, Clock, Phone, MessageCircle, ChevronDown } from "lucide-react"
+import { useRef, useState } from "react"
 
 export default function CartPage() {
   const { state, dispatch } = useCart()
-  const { locale, t } = useLocale()
+  const { locale, setLocale, t, isRTL } = useLocale()
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
+  const languageRef = useRef<HTMLDivElement>(null)
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -31,25 +34,68 @@ export default function CartPage() {
   const total = subtotal - discount + deliveryFee
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${locale === "ar" ? "rtl" : "ltr"}`}>
+    <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
       {/* Top Header */}
       <div className="bg-blue-600 text-white py-2 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <span>{locale === "ar" ? "العربية" : "English"}</span>
-            <ChevronDown className="w-4 h-4" />
+            <div className="relative" ref={languageRef}>
+              <button
+                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                className="flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+              >
+                <span>{t("header.language")}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+
+              {showLanguageDropdown && (
+                <div
+                  className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[120px]"
+                  onMouseLeave={() =>
+                    setTimeout(() => {
+                      if (!languageRef.current?.matches(":hover")) {
+                        setShowLanguageDropdown(false)
+                      }
+                    }, 100)
+                  }
+                >
+                  <button
+                    onClick={() => {
+                      setLocale("en")
+                      setShowLanguageDropdown(false)
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 cursor-pointer ${
+                      locale === "en" ? "text-blue-600 font-medium" : "text-gray-700"
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocale("ar")
+                      setShowLanguageDropdown(false)
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 cursor-pointer ${
+                      locale === "ar" ? "text-blue-600 font-medium" : "text-gray-700"
+                    }`}
+                  >
+                    العربية
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <Phone className="w-4 h-4" />
-            <MessageCircle className="w-4 h-4" />
+            <Phone className="w-4 h-4 cursor-pointer hover:text-blue-200" />
+            <MessageCircle className="w-4 h-4 cursor-pointer hover:text-blue-200" />
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="shadow-sm" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
+      <header className="shadow-sm header-gradient">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center min-h-[55px]">
             <Link href="/" className="flex items-center cursor-pointer">
               <Image
                 src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
@@ -74,7 +120,7 @@ export default function CartPage() {
                 width={24}
                 height={24}
               />
-              <span className="font-medium">{t("water")}</span>
+              <span className="font-medium">{t("nav.water")}</span>
             </Link>
             <Link href="/s/juice" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
               <Image
@@ -83,7 +129,7 @@ export default function CartPage() {
                 width={24}
                 height={24}
               />
-              <span className="font-medium">{t("juice")}</span>
+              <span className="font-medium">{t("nav.juice")}</span>
             </Link>
             <Link href="/s/dairy" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
               <Image
@@ -92,7 +138,7 @@ export default function CartPage() {
                 width={24}
                 height={24}
               />
-              <span className="font-medium">{t("dairy")}</span>
+              <span className="font-medium">{t("nav.dairy")}</span>
             </Link>
             <Link
               href="/s/accessories"
@@ -104,7 +150,7 @@ export default function CartPage() {
                 width={24}
                 height={24}
               />
-              <span className="font-medium">{t("accessories")}</span>
+              <span className="font-medium">{t("nav.accessories")}</span>
             </Link>
           </div>
         </div>
@@ -118,7 +164,7 @@ export default function CartPage() {
               Oasis Direct
             </Link>
             <span>/</span>
-            <span className="text-gray-900">{t("cart")}</span>
+            <span className="text-gray-900">{t("header.cart")}</span>
           </div>
         </div>
       </div>

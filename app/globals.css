@@ -188,21 +188,28 @@
     transform: scale(0.4);
   }
 
+  /* Updated bubble animations with correct keyframes for vertical and horizontal movement */
   @keyframes jss142 {
     0% {
-      transform: translateY(100vh) scale(0.4);
+      top: 100%;
     }
     100% {
-      transform: translateY(-100px) scale(0.4);
+      top: -30px;
     }
   }
 
   @keyframes jss143 {
     0% {
-      transform: translateX(-20px) scale(0.4);
+      margin-left: 5px;
     }
     100% {
-      transform: translateX(20px) scale(0.4);
+      margin-left: -5px;
     }
+  }
+
+  /* Added header styling with minimum height and gradient background */
+  .header-gradient {
+    background: linear-gradient(to right, #2871a5, #243464);
+    min-height: 55px;
   }
 }
