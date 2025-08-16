@@ -23,20 +23,25 @@ const brands = [
 
 const heroSlides = [
   {
-    title: "Hero Slide 1",
-    titleAr: "الشريحة الرئيسية 1",
-    subtitle: "Subtitle for Hero Slide 1",
-    subtitleAr: "العنوان الفرعي للشريحة الرئيسية 1",
-    image: "/placeholder.svg",
-    isNew: true,
+    image: "https://nfpc.imgix.net/files/1754035079537_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
   },
   {
-    title: "Hero Slide 2",
-    titleAr: "الشريحة الرئيسية 2",
-    subtitle: "Subtitle for Hero Slide 2",
-    subtitleAr: "العنوان الفرعي للشريحة الرئيسية 2",
-    image: "/placeholder.svg",
-    isNew: false,
+    image: "https://nfpc.imgix.net/files/1738236905803_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    image: "https://nfpc.imgix.net/files/1717584993128_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    image: "https://nfpc.imgix.net/files/1679559641776_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    image: "https://nfpc.imgix.net/files/1648479316883_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    image: "https://nfpc.imgix.net/files/1672728704985_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
+  },
+  {
+    image: "https://nfpc.imgix.net/files/1654455821015_image.jpg?fit=contain&auto=format%2Ccompress&w=3840",
   },
 ]
 
@@ -275,7 +280,7 @@ export default function OasisDirectHomePage() {
                 />
                 <Button
                   size="sm"
-                  className="absolute right-1 top-1 bottom-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 cursor-pointer"
                 >
                   <Search className="w-4 h-4" />
                 </Button>
@@ -425,22 +430,12 @@ export default function OasisDirectHomePage() {
             >
               {heroSlides.map((slide, index) => (
                 <div key={index} className="w-full flex-shrink-0">
-                  <div className="relative h-64 md:h-80 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg overflow-hidden">
+                  <div className="relative h-64 md:h-80 rounded-lg overflow-hidden">
                     <img
                       src={slide.image || "/placeholder.svg"}
-                      alt={isRTL ? slide.titleAr : slide.title}
+                      alt={`Hero slide ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-20" />
-                    <div
-                      className={`absolute inset-0 flex items-center ${isRTL ? "justify-start pl-8 md:pl-16" : "justify-end pr-8 md:pr-16"}`}
-                    >
-                      <div className={`${isRTL ? "text-left" : "text-right"} text-white`}>
-                        {slide.isNew && <Badge className="bg-red-500 text-white mb-2">{t("product.new")}</Badge>}
-                        <h2 className="text-2xl md:text-4xl font-bold mb-2">{isRTL ? slide.titleAr : slide.title}</h2>
-                        <p className="text-lg md:text-xl italic">{isRTL ? slide.subtitleAr : slide.subtitle}</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               ))}
