@@ -57,6 +57,7 @@ type SortOption = "featured" | "priceLowHigh" | "priceHighLow" | "newest" | "nam
 
 export default function BrandPage({ params }: { params: { brand: string } }) {
   const brand = params.brand
+
   const [sortBy, setSortBy] = useState<SortOption>("featured")
   const [priceRange, setPriceRange] = useState([0, 50])
   const [searchQuery, setSearchQuery] = useState("")

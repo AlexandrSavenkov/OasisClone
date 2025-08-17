@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { notFound, useRouter } from "next/navigation"
 import { ShoppingCart, Phone, MessageCircle, ChevronDown, Grid, List, Minus, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,84 @@ import { useLocale } from "@/contexts/LocaleContext"
 import { fetchProductsByCategory, type Product } from "@/lib/api"
 
 const validCategories = ["water", "juice", "dairy", "accessories"]
+
+function ProductSkeleton() {
+  return (
+    <Card className="animate-pulse">
+      <CardContent className="p-4">
+        <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+        <div className="bg-gray-200 h-4 rounded mb-2"></div>
+        <div className="bg-gray-200 h-4 rounded w-2/3 mb-3"></div>
+        <div className="flex justify-between items-center">
+          <div className="bg-gray-200 h-8 w-20 rounded"></div>
+          <div className="bg-gray-200 h-8 w-24 rounded"></div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const ProductCard = ({ product, isRTL, onAddToCart, onQuantityChange, getQuantity, onProductClick }: any) => (
+  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+    <CardContent className="p-3 md:p-4">
+      <div className="relative mb-4" onClick={() => onProductClick(product)}>
+        <img
+          src={product.image || "/placeholder.svg"}
+          alt={isRTL ? product.nameAr || product.name : product.name}
+          className="w-full h-40 md:h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+          loading="lazy"
+        />
+        {product.isNew && <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>}
+        {product.discount && (
+          <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
+        )}
+      </div>
+
+      <h3
+        className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm md:text-base cursor-pointer hover:text-blue-600 transition-colors"
+        onClick={() => onProductClick(product)}
+      >
+        {isRTL ? product.nameAr || product.name : product.name}
+      </h3>
+
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-base md:text-lg font-bold text-blue-600">AED {product.price}</span>
+        {product.originalPrice && (
+          <span className="text-xs md:text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer bg-transparent h-8 w-8 p-0"
+            onClick={() => onQuantityChange(product.id, getQuantity(product.id) - 1)}
+          >
+            <Minus className="w-4 h-4" />
+          </Button>
+          <span className="px-2 py-1 border rounded min-w-[32px] text-center text-sm">{getQuantity(product.id)}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer bg-transparent h-8 w-8 p-0"
+            onClick={() => onQuantityChange(product.id, getQuantity(product.id) + 1)}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+        <Button
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-xs md:text-sm px-2 md:px-4"
+          onClick={() => onAddToCart(product)}
+        >
+          Add to Cart
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+)
 
 export default function CategoryPage({ params }: { params: { category: string } }) {
   const category = params.category
@@ -36,26 +114,38 @@ export default function CategoryPage({ params }: { params: { category: string } 
   const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1)
 
   useEffect(() => {
+    let isMounted = true
+
     const loadProducts = async () => {
-      setIsLoading(true)
       try {
         console.log("[v0] Loading products for category:", category)
         const apiProducts = await fetchProductsByCategory(
           category as keyof typeof import("@/lib/api").categoryEndpoints,
         )
-        console.log("[v0] Category products loaded:", apiProducts.length)
-        setProducts(apiProducts)
+
+        if (isMounted) {
+          console.log("[v0] Category products loaded:", apiProducts.length)
+          setProducts(apiProducts)
+          setIsLoading(false)
+        }
       } catch (error) {
         console.error("[v0] Error loading category products:", error)
-      } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
 
     loadProducts()
+
+    return () => {
+      isMounted = false
+    }
   }, [category])
 
   const filteredAndSortedProducts = useMemo(() => {
+    if (!products.length) return []
+
     const filtered = products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,27 +156,20 @@ export default function CategoryPage({ params }: { params: { category: string } 
 
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price)
-        break
+        return [...filtered].sort((a, b) => a.price - b.price)
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price)
-        break
+        return [...filtered].sort((a, b) => b.price - a.price)
       case "newest":
-        filtered.sort((a, b) => new Date(b.dateAdded || 0).getTime() - new Date(a.dateAdded || 0).getTime())
-        break
+        return [...filtered].sort((a, b) => new Date(b.dateAdded || 0).getTime() - new Date(a.dateAdded || 0).getTime())
       case "name":
-        filtered.sort((a, b) => {
+        return [...filtered].sort((a, b) => {
           const nameA = isRTL ? a.nameAr || a.name : a.name
           const nameB = isRTL ? b.nameAr || b.name : b.name
           return nameA.localeCompare(nameB)
         })
-        break
       default:
-        // Keep original order for featured
-        break
+        return filtered
     }
-
-    return filtered
   }, [products, searchQuery, sortBy, priceRange, isRTL])
 
   const handleAddToCart = (product: Product) => {
@@ -362,77 +445,33 @@ export default function CategoryPage({ params }: { params: { category: string } 
             </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                <span className="ml-2 text-gray-600">Loading products...</span>
-              </div>
-            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {filteredAndSortedProducts.map((product) => (
-                  <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-3 md:p-4">
-                      <div className="relative mb-4" onClick={() => handleProductClick(product)}>
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={isRTL ? product.nameAr || product.name : product.name}
-                          className="w-full h-40 md:h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                        />
-                        {product.isNew && <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>}
-                        {product.discount && (
-                          <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
-                        )}
-                      </div>
-
-                      <h3
-                        className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm md:text-base cursor-pointer hover:text-blue-600 transition-colors"
-                        onClick={() => handleProductClick(product)}
-                      >
-                        {isRTL ? product.nameAr || product.name : product.name}
-                      </h3>
-
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-base md:text-lg font-bold text-blue-600">AED {product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-xs md:text-sm text-gray-500 line-through">
-                            AED {product.originalPrice}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="cursor-pointer bg-transparent h-8 w-8 p-0"
-                            onClick={() => handleQuantityChange(product.id, getQuantity(product.id) - 1)}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <span className="px-2 py-1 border rounded min-w-[32px] text-center text-sm">
-                            {getQuantity(product.id)}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="cursor-pointer bg-transparent h-8 w-8 p-0"
-                            onClick={() => handleQuantityChange(product.id, getQuantity(product.id) + 1)}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-xs md:text-sm px-2 md:px-4"
-                          onClick={() => handleAddToCart(product)}
-                        >
-                          {t("product.addToCart")}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <ProductSkeleton key={index} />
                 ))}
               </div>
+            ) : (
+              <Suspense
+                fallback={
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  </div>
+                }
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {filteredAndSortedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isRTL={isRTL}
+                      onAddToCart={handleAddToCart}
+                      onQuantityChange={handleQuantityChange}
+                      getQuantity={getQuantity}
+                      onProductClick={handleProductClick}
+                    />
+                  ))}
+                </div>
+              </Suspense>
             )}
 
             {!isLoading && filteredAndSortedProducts.length === 0 && (
