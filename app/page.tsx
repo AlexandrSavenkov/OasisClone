@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCart } from "@/hooks/useCart"
 import { useLocale } from "@/contexts/LocaleContext"
 import { usePathname } from "next/navigation"
-import { fetchAllProducts, searchProducts, type Product } from "@/lib/api"
+import { searchProducts, type Product } from "@/lib/api"
 
 const brands = [
   {
@@ -81,12 +81,14 @@ export default function OasisDirectHomePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("featured")
   const [currentSlide, setCurrentSlide] = useState(0)
   const [productQuantities, setProductQuantities] = useState<Record<string | number, number>>({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const [productsPerPage] = useState(12)
   const searchRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const languageRef = useRef<HTMLDivElement>(null)
@@ -96,28 +98,43 @@ export default function OasisDirectHomePage() {
   const { locale, setLocale, t, isRTL } = useLocale()
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadFeaturedProducts = async () => {
       setIsLoading(true)
       try {
-        console.log("[v0] Loading products from API")
-        const apiProducts = await fetchAllProducts()
-        console.log("[v0] Products loaded:", apiProducts.length)
-        setProducts(apiProducts)
-        setFilteredProducts(sortProducts(apiProducts, sortBy))
+        console.log("[v0] Loading featured products from API")
+        const waterProducts = await fetch("/api/proxy?type=s&name=water").then((res) => res.json())
+        const products = waterProducts.pageData?.products || []
+        const featured = products.slice(0, 12).map((product: any) => ({
+          id: product._id,
+          name: product.name,
+          nameAr: product.nameAr || product.name,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          image: product.image,
+          category: product.category || "water",
+          brand: product.brand,
+          featured: true,
+          isNew: product.isNew,
+          discount: product.discount,
+          dateAdded: product.dateAdded,
+        }))
+        console.log("[v0] Featured products loaded:", featured.length)
+        setFeaturedProducts(featured)
+        setFilteredProducts(featured)
       } catch (error) {
-        console.error("[v0] Error loading products:", error)
+        console.error("[v0] Error loading featured products:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadProducts()
+    loadFeaturedProducts()
   }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 5000) // Auto-scroll every 5 seconds
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [])
@@ -139,7 +156,7 @@ export default function OasisDirectHomePage() {
       const sorted = sortProducts(searchResults, sortBy)
       setFilteredProducts(sorted)
     } else {
-      const sorted = sortProducts(products, sortBy)
+      const sorted = sortProducts(featuredProducts, sortBy)
       setFilteredProducts(sorted)
     }
   }
@@ -179,20 +196,19 @@ export default function OasisDirectHomePage() {
 
   const handleAddToCart = (product: Product) => {
     const quantity = productQuantities[product.id] || 1
-    for (let i = 0; i < quantity; i++) {
-      cartDispatch({
-        type: "ADD_ITEM",
-        payload: {
-          id: product.id,
-          name: isRTL ? product.nameAr || product.name : product.name,
-          price: product.price,
-          originalPrice: product.originalPrice || undefined,
-          image: product.image,
-          category: product.category,
-          brand: product.brand,
-        },
-      })
-    }
+    cartDispatch({
+      type: "ADD_ITEM",
+      payload: {
+        id: product.id,
+        name: isRTL ? product.nameAr || product.name : product.name,
+        price: product.price,
+        originalPrice: product.originalPrice || undefined,
+        image: product.image,
+        category: product.category,
+        brand: product.brand,
+        quantity: quantity,
+      },
+    })
   }
 
   const handleQuantityChange = (productId: string | number, change: number) => {
@@ -226,9 +242,13 @@ export default function OasisDirectHomePage() {
     }, 100)
   }
 
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      {/* Top Header */}
       <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
@@ -285,11 +305,9 @@ export default function OasisDirectHomePage() {
         </div>
       </div>
 
-      {/* Main Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between min-h-[55px]">
-            {/* Logo */}
             <div className="flex items-center">
               <Link href="/">
                 <img
@@ -300,7 +318,6 @@ export default function OasisDirectHomePage() {
               </Link>
             </div>
 
-            {/* Search Bar */}
             <div className="flex-1 max-w-2xl mx-8 relative">
               <div
                 ref={searchRef}
@@ -335,7 +352,6 @@ export default function OasisDirectHomePage() {
                   className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-96 overflow-y-auto"
                   onMouseLeave={() => setShowSearchDropdown(false)}
                 >
-                  {/* Show All Button */}
                   <div className="p-3 border-b border-gray-100">
                     <Link href="/search">
                       <Button
@@ -350,7 +366,6 @@ export default function OasisDirectHomePage() {
                     </Link>
                   </div>
 
-                  {/* Product Suggestions */}
                   <div className="py-2">
                     {filteredProducts.slice(0, 6).map((product) => (
                       <Link key={product.id} href={`/product/${product.id}`}>
@@ -399,7 +414,6 @@ export default function OasisDirectHomePage() {
               )}
             </div>
 
-            {/* Cart */}
             <div className="flex items-center gap-4">
               <Link href="/cart">
                 <Button
@@ -419,7 +433,6 @@ export default function OasisDirectHomePage() {
         </div>
       </header>
 
-      {/* Navigation Menu */}
       <nav style={{ backgroundColor: "#F2F3F2" }} className="border-t">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center gap-12 py-6">
@@ -495,7 +508,6 @@ export default function OasisDirectHomePage() {
         </div>
       </nav>
 
-      {/* Hero Carousel */}
       <section className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="relative overflow-hidden rounded-lg h-[500px]">
@@ -535,7 +547,6 @@ export default function OasisDirectHomePage() {
               </Button>
             </div>
 
-            {/* Carousel Indicators */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
               {heroSlides.map((_, index) => (
                 <button
@@ -551,9 +562,7 @@ export default function OasisDirectHomePage() {
         </div>
       </section>
 
-      {/* Shop By Brand */}
       <section className="relative" style={{ backgroundColor: "#EEF7F1" }}>
-        {/* Floating Bubbles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {Array.from({ length: 10 }).map((_, i) => (
             <div
@@ -589,7 +598,6 @@ export default function OasisDirectHomePage() {
         </div>
       </section>
 
-      {/* Special Promotions */}
       <section className="bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
@@ -622,75 +630,121 @@ export default function OasisDirectHomePage() {
             </div>
           </div>
 
+          <div className="mb-4">
+            <p className="text-gray-600">
+              {t("product.showing")} {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)}{" "}
+              {t("product.of")} {filteredProducts.length} {t("product.products")}
+            </p>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               <span className="ml-2 text-gray-600">Loading products...</span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="p-4">
-                    <Link href={`/product/${product.id}`}>
-                      <div className="relative mb-4">
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={isRTL ? product.nameAr || product.name : product.name}
-                          className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                        />
-                        {product.isNew && (
-                          <Badge className="absolute top-2 right-2 bg-red-500 text-white">{t("product.new")}</Badge>
-                        )}
-                        {product.discount && (
-                          <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {currentProducts.map((product) => (
+                  <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-4">
+                      <Link href={`/product/${product.id}`}>
+                        <div className="relative mb-4">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={isRTL ? product.nameAr || product.name : product.name}
+                            className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                            loading="lazy"
+                          />
+                          {product.isNew && (
+                            <Badge className="absolute top-2 right-2 bg-red-500 text-white">{t("product.new")}</Badge>
+                          )}
+                          {product.discount && (
+                            <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
+                          )}
+                        </div>
+                      </Link>
+
+                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 cursor-pointer">
+                        {isRTL ? product.nameAr || product.name : product.name}
+                      </h3>
+
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg font-bold text-blue-600">AED {product.price}</span>
+                        {product.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
                         )}
                       </div>
-                    </Link>
 
-                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 cursor-pointer">
-                      {isRTL ? product.nameAr || product.name : product.name}
-                    </h3>
-
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg font-bold text-blue-600">AED {product.price}</span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer bg-transparent"
+                            onClick={() => handleQuantityChange(product.id, -1)}
+                          >
+                            -
+                          </Button>
+                          <span className="px-3 py-1 border rounded">{productQuantities[product.id] || 1}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer bg-transparent"
+                            onClick={() => handleQuantityChange(product.id, 1)}
+                          >
+                            +
+                          </Button>
+                        </div>
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="cursor-pointer bg-transparent"
-                          onClick={() => handleQuantityChange(product.id, -1)}
+                          className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                          onClick={() => handleAddToCart(product)}
                         >
-                          -
-                        </Button>
-                        <span className="px-3 py-1 border rounded">{productQuantities[product.id] || 1}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="cursor-pointer bg-transparent"
-                          onClick={() => handleQuantityChange(product.id, 1)}
-                        >
-                          +
+                          {t("product.addToCart")}
                         </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                        onClick={() => handleAddToCart(product)}
-                      >
-                        {t("product.addToCart")}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
 
           <div className="text-center mt-8">
@@ -702,9 +756,6 @@ export default function OasisDirectHomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      
     </div>
   )
 }

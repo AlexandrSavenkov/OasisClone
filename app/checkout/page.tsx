@@ -156,8 +156,7 @@ export default function CheckoutPage() {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      {/* Top Header */}
-      <div className="bg-blue-600 text-white py-2 px-4">
+      <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
             <div className="relative" ref={languageRef}>
@@ -213,8 +212,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className="header-gradient shadow-sm">
+      <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-center min-h-[55px]">
             <Link href="/" className="flex items-center cursor-pointer">
@@ -230,48 +228,68 @@ export default function CheckoutPage() {
         </div>
       </header>
 
-      {/* Category Navigation */}
-      <nav className="bg-white border-t">
+      <nav style={{ backgroundColor: "#F2F3F2" }} className="border-t">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center gap-8 py-4">
-            <Link href="/s/water" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Water"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.water")}</span>
+          <div className="flex items-center justify-center gap-12 py-6">
+            <Link
+              href="/s/water"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Water"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.water")}</span>
             </Link>
-            <Link href="/s/juice" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Juice"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.juice")}</span>
+            <Link
+              href="/s/juice"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Juice"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.juice")}</span>
             </Link>
-            <Link href="/s/dairy" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Dairy"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.dairy")}</span>
+            <Link
+              href="/s/dairy"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Dairy"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.dairy")}</span>
             </Link>
             <Link
               href="/s/accessories"
-              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
             >
-              <Image
-                src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Accessories"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.accessories")}</span>
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Accessories"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.accessories")}</span>
             </Link>
           </div>
         </div>
@@ -298,15 +316,14 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <User className="h-5 w-5 mr-2 text-blue-600" />
-                {t("checkout.contactInfo")}
+                Personal Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName">{t("checkout.firstName")} *</Label>
+                  <Label htmlFor="firstName">First Name *</Label>
                   <Input
                     id="firstName"
                     placeholder={t("checkout.enterFirstName")}
@@ -317,7 +334,7 @@ export default function CheckoutPage() {
                   {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="lastName">{t("checkout.lastName")} *</Label>
+                  <Label htmlFor="lastName">Last Name *</Label>
                   <Input
                     id="lastName"
                     placeholder={t("checkout.enterLastName")}
@@ -328,7 +345,7 @@ export default function CheckoutPage() {
                   {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="email">{t("checkout.email")} *</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -340,7 +357,7 @@ export default function CheckoutPage() {
                   {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="phone">{t("checkout.phone")} *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <Input
                     id="phone"
                     placeholder="+971 XX XXX XXXX"
@@ -353,15 +370,14 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Delivery Address */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <MapPin className="h-5 w-5 mr-2 text-blue-600" />
-                {t("checkout.deliveryAddress")}
+                Delivery Address
               </h2>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="address">{t("checkout.streetAddress")} *</Label>
+                  <Label htmlFor="address">Street Address *</Label>
                   <Input
                     id="address"
                     placeholder={t("checkout.enterStreetAddress")}
@@ -372,7 +388,7 @@ export default function CheckoutPage() {
                   {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="city">{t("checkout.city")} *</Label>
+                  <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
                     placeholder={t("checkout.enterCity")}
@@ -383,7 +399,7 @@ export default function CheckoutPage() {
                   {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="area">{t("checkout.area")} *</Label>
+                  <Label htmlFor="area">Area/District *</Label>
                   <Input
                     id="area"
                     placeholder={t("checkout.enterArea")}
@@ -394,7 +410,7 @@ export default function CheckoutPage() {
                   {errors.area && <p className="text-red-500 text-sm mt-1">{errors.area}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="building">{t("checkout.building")} *</Label>
+                  <Label htmlFor="building">Building/Villa Number *</Label>
                   <Input
                     id="building"
                     placeholder={t("checkout.enterBuilding")}
@@ -405,7 +421,7 @@ export default function CheckoutPage() {
                   {errors.building && <p className="text-red-500 text-sm mt-1">{errors.building}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="apartment">{t("checkout.apartment")}</Label>
+                  <Label htmlFor="apartment">Apartment/Floor (Optional)</Label>
                   <Input
                     id="apartment"
                     placeholder={t("checkout.enterApartment")}
@@ -415,7 +431,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="landmark">{t("checkout.landmark")}</Label>
+                  <Label htmlFor="landmark">Nearby Landmark (Optional)</Label>
                   <Input
                     id="landmark"
                     placeholder={t("checkout.enterLandmark")}
@@ -427,11 +443,10 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Method */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
-                {t("checkout.paymentMethod")}
+                Payment Method
               </h2>
               <RadioGroup
                 value={formData.paymentMethod}
@@ -441,22 +456,21 @@ export default function CheckoutPage() {
                 <div className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer">
                   <RadioGroupItem value="card" id="card" />
                   <Label htmlFor="card" className="font-semibold cursor-pointer">
-                    {t("checkout.creditCard")}
+                    Credit/Debit Card
                   </Label>
                 </div>
                 <div className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer">
                   <RadioGroupItem value="googlepay" id="googlepay" />
                   <Label htmlFor="googlepay" className="font-semibold cursor-pointer">
-                    {t("checkout.googlePay")}
+                    Google Pay
                   </Label>
                 </div>
               </RadioGroup>
 
-              {/* Card Details */}
               {formData.paymentMethod === "card" && (
                 <div className="mt-4 space-y-4">
                   <div>
-                    <Label htmlFor="cardNumber">{t("checkout.cardNumber")} *</Label>
+                    <Label htmlFor="cardNumber">Card Number *</Label>
                     <Input
                       id="cardNumber"
                       placeholder="1234 5678 9012 3456"
@@ -468,7 +482,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="expiry">{t("checkout.expiryDate")} *</Label>
+                      <Label htmlFor="expiry">Expiry Date *</Label>
                       <Input
                         id="expiry"
                         placeholder="MM/YY"
@@ -479,7 +493,7 @@ export default function CheckoutPage() {
                       {errors.expiry && <p className="text-red-500 text-sm mt-1">{errors.expiry}</p>}
                     </div>
                     <div>
-                      <Label htmlFor="cvv">{t("checkout.cvv")} *</Label>
+                      <Label htmlFor="cvv">Security Code (CVV) *</Label>
                       <Input
                         id="cvv"
                         placeholder="123"
@@ -494,7 +508,6 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Terms and Conditions */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-start space-x-3">
                 <Checkbox
@@ -503,13 +516,13 @@ export default function CheckoutPage() {
                   onCheckedChange={(checked) => handleInputChange("termsAccepted", checked as boolean)}
                 />
                 <Label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer">
-                  {t("checkout.termsAccepted")}
+                  I agree to the{" "}
                   <Link href="/terms" className="text-blue-600 hover:underline cursor-pointer">
-                    {t("checkout.terms")}
+                    Terms & Conditions
                   </Link>{" "}
-                  {t("checkout.and")}
+                  and{" "}
                   <Link href="/privacy" className="text-blue-600 hover:underline cursor-pointer">
-                    {t("checkout.privacy")}
+                    Privacy Policy
                   </Link>
                 </Label>
               </div>
@@ -521,7 +534,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border sticky top-4">
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">{t("checkout.orderSummary")}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
 
                 {/* Cart Items */}
                 <div className="space-y-3 mb-4">
@@ -537,7 +550,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{item.name}</p>
                         <p className="text-xs text-gray-600">
-                          {t("checkout.qty")}: {item.quantity}
+                          {t("checkout.productQuantity")}: {item.quantity}
                         </p>
                       </div>
                       <span className="font-semibold">AED {(item.price * item.quantity).toFixed(2)}</span>
@@ -549,18 +562,18 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">{t("checkout.subtotal")}</span>
+                    <span className="text-gray-600">Subtotal</span>
                     <span className="font-semibold">AED {cartState.total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">{t("checkout.delivery")}</span>
+                    <span className="text-gray-600">Delivery Fee</span>
                     <span className="font-semibold text-green-600">
-                      {deliveryFee === 0 ? t("checkout.free") : `AED ${deliveryFee.toFixed(2)}`}
+                      {deliveryFee === 0 ? "FREE" : `AED ${deliveryFee.toFixed(2)}`}
                     </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg">
-                    <span className="font-bold">{t("checkout.total")}</span>
+                    <span className="font-bold">Total Amount</span>
                     <span className="font-bold text-blue-600">AED {total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -571,7 +584,7 @@ export default function CheckoutPage() {
                   onClick={handlePlaceOrder}
                   disabled={cartState.items.length === 0}
                 >
-                  {t("checkout.placeOrder")}
+                  Complete Order
                 </Button>
 
                 <div className="mt-4 text-center">
@@ -580,7 +593,7 @@ export default function CheckoutPage() {
                     className="text-blue-600 hover:underline text-sm flex items-center justify-center cursor-pointer"
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />
-                    {t("checkout.backToCart")}
+                    Return to Cart
                   </Link>
                 </div>
               </div>

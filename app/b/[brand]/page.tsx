@@ -65,9 +65,10 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
   const [isLoading, setIsLoading] = useState(true)
   const [productQuantities, setProductQuantities] = useState<Record<string | number, number>>({})
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
 
   const { state: cartState, dispatch: cartDispatch } = useCart()
-  const { locale, isRTL, t } = useLocale()
+  const { locale, setLocale, isRTL, t } = useLocale()
 
   if (!validBrands.includes(brand)) {
     notFound()
@@ -133,20 +134,19 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
 
   const handleAddToCart = (product: Product) => {
     const quantity = productQuantities[product.id] || 1
-    for (let i = 0; i < quantity; i++) {
-      cartDispatch({
-        type: "ADD_ITEM",
-        payload: {
-          id: product.id,
-          name: isRTL ? product.nameAr || product.name : product.name,
-          price: product.price,
-          originalPrice: product.originalPrice || undefined,
-          image: product.image,
-          category: product.category,
-          brand: product.brand,
-        },
-      })
-    }
+    cartDispatch({
+      type: "ADD_ITEM",
+      payload: {
+        id: product.id,
+        name: isRTL ? product.nameAr || product.name : product.name,
+        price: product.price,
+        originalPrice: product.originalPrice || undefined,
+        image: product.image,
+        category: product.category,
+        brand: product.brand,
+        quantity: quantity,
+      },
+    })
   }
 
   const handleQuantityChange = (productId: string | number, change: number) => {
@@ -158,11 +158,40 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      <div className="bg-blue-600 text-white py-2 px-4">
+      <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <span>{t("header.language")}</span>
-            <ChevronDown className="w-4 h-4" />
+            <div className="relative">
+              <button
+                className="flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+              >
+                <span>{t("header.language")}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showLanguageDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg py-1 z-50">
+                  <button
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left cursor-pointer"
+                    onClick={() => {
+                      setLocale("en")
+                      setShowLanguageDropdown(false)
+                    }}
+                  >
+                    English
+                  </button>
+                  <button
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left cursor-pointer"
+                    onClick={() => {
+                      setLocale("ar")
+                      setShowLanguageDropdown(false)
+                    }}
+                  >
+                    العربية
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Phone className="w-4 h-4 cursor-pointer hover:text-blue-200" />
@@ -171,7 +200,7 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
         </div>
       </div>
 
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm" style={{ minHeight: "55px" }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -185,51 +214,29 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
             </div>
 
             <div className="flex-1 max-w-2xl mx-8">
-              <div className="flex items-center justify-center gap-4 md:gap-8">
-                <a
-                  href="/s/water"
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Water"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.water")}</span>
-                </a>
-                <a
-                  href="/s/juice"
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Juice"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.juice")}</span>
-                </a>
-                <a
-                  href="/s/dairy"
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Dairy"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.dairy")}</span>
-                </a>
-                <a
-                  href="/s/accessories"
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors"
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Accessories"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.accessories")}</span>
-                </a>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t("header.searchPlaceholder")}
+                  className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent hover:bg-gray-100 p-1 rounded">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-gray-500"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -251,19 +258,60 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
         </div>
       </header>
 
-      <nav className="bg-white border-t">
+      <nav className="border-t" style={{ backgroundColor: "#F2F3F2" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center gap-12 py-6">
             <a
-              href="/"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
+              href="/s/water"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
             >
-              <img
-                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
-                alt="Oasis Direct"
-                className="w-6 h-6"
-              />
-              <span className="font-medium">Oasis Direct</span>
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                <img
+                  alt="Water"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.water")}</span>
+            </a>
+            <a
+              href="/s/juice"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200 transition-all duration-300">
+                <img
+                  alt="Juice"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.juice")}</span>
+            </a>
+            <a
+              href="/s/dairy"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300">
+                <img
+                  alt="Dairy"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.dairy")}</span>
+            </a>
+            <a
+              href="/s/accessories"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
+                <img
+                  alt="Accessories"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.accessories")}</span>
             </a>
           </div>
         </div>
@@ -469,8 +517,6 @@ export default function BrandPage({ params }: { params: { brand: string } }) {
           </div>
         </div>
       </div>
-
-      
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { notFound } from "next/navigation"
+import { notFound, useRouter } from "next/navigation"
 import { ShoppingCart, Phone, MessageCircle, ChevronDown, Grid, List, Minus, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,7 +18,8 @@ const validCategories = ["water", "juice", "dairy", "accessories"]
 export default function CategoryPage({ params }: { params: { category: string } }) {
   const category = params.category
   const { state, dispatch } = useCart()
-  const { locale, isRTL, t } = useLocale()
+  const { locale, setLocale, isRTL, t } = useLocale()
+  const router = useRouter()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("featured")
@@ -26,6 +27,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
   const [quantities, setQuantities] = useState<Record<string | number, number>>({})
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
 
   if (!validCategories.includes(category)) {
     notFound()
@@ -89,20 +91,19 @@ export default function CategoryPage({ params }: { params: { category: string } 
 
   const handleAddToCart = (product: Product) => {
     const quantity = quantities[product.id] || 1
-    for (let i = 0; i < quantity; i++) {
-      dispatch({
-        type: "ADD_ITEM",
-        payload: {
-          id: product.id,
-          name: isRTL ? product.nameAr || product.name : product.name,
-          price: product.price,
-          originalPrice: product.originalPrice,
-          image: product.image,
-          category: product.category,
-          brand: product.brand,
-        },
-      })
-    }
+    dispatch({
+      type: "ADD_ITEM",
+      payload: {
+        id: product.id,
+        name: isRTL ? product.nameAr || product.name : product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.image,
+        category: product.category,
+        brand: product.brand,
+        quantity: quantity,
+      },
+    })
   }
 
   const handleQuantityChange = (productId: string | number, newQuantity: number) => {
@@ -112,23 +113,55 @@ export default function CategoryPage({ params }: { params: { category: string } 
 
   const getQuantity = (productId: string | number) => quantities[productId] || 1
 
+  const handleProductClick = (product: Product) => {
+    router.push(`/product/${product.id}`)
+  }
+
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      {/* Header - Same as main page */}
-      <div className="bg-blue-600 text-white py-2 px-4">
+      <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
-          <div className="flex items-center gap-4 cursor-pointer">
-            <span>{t("header.language")}</span>
-            <ChevronDown className="w-4 h-4" />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <button
+                className="flex items-center gap-1 hover:text-blue-200 cursor-pointer"
+                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+              >
+                <span>{t("header.language")}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showLanguageDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg py-1 z-50">
+                  <button
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left cursor-pointer"
+                    onClick={() => {
+                      setLocale("en")
+                      setShowLanguageDropdown(false)
+                    }}
+                  >
+                    English
+                  </button>
+                  <button
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left cursor-pointer"
+                    onClick={() => {
+                      setLocale("ar")
+                      setShowLanguageDropdown(false)
+                    }}
+                  >
+                    العربية
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <Phone className="w-4 h-4 cursor-pointer" />
-            <MessageCircle className="w-4 h-4 cursor-pointer" />
+            <Phone className="w-4 h-4 cursor-pointer hover:text-blue-200" />
+            <MessageCircle className="w-4 h-4 cursor-pointer hover:text-blue-200" />
           </div>
         </div>
       </div>
 
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm" style={{ minHeight: "55px" }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -142,80 +175,96 @@ export default function CategoryPage({ params }: { params: { category: string } 
             </div>
 
             <div className="flex-1 max-w-2xl mx-8">
-              <div className="flex items-center justify-center gap-4 md:gap-8">
-                <a
-                  href="/s/water"
-                  className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "water" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Water"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.water")}</span>
-                </a>
-                <a
-                  href="/s/juice"
-                  className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "juice" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Juice"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.juice")}</span>
-                </a>
-                <a
-                  href="/s/dairy"
-                  className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "dairy" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Dairy"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.dairy")}</span>
-                </a>
-                <a
-                  href="/s/accessories"
-                  className={`flex items-center gap-2 cursor-pointer transition-colors ${category === "accessories" ? "text-blue-600" : "text-gray-600 hover:text-blue-600"}`}
-                >
-                  <img
-                    src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                    alt="Accessories"
-                    className="w-5 h-5 md:w-6 md:h-6"
-                  />
-                  <span className="font-medium text-sm md:text-base">{t("nav.accessories")}</span>
-                </a>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t("header.search.placeholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-transparent">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent cursor-pointer">
-                <ShoppingCart className="w-4 h-4" />
-                <span className="hidden sm:inline">{t("header.cart")}</span>
-                <Badge variant="secondary" className="ml-1">
-                  {state.itemCount}
-                </Badge>
-              </Button>
+              <a href="/cart" className="cursor-pointer">
+                <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t("header.cart")}</span>
+                  <Badge variant="secondary" className="ml-1">
+                    {state.itemCount}
+                  </Badge>
+                </Button>
+              </a>
             </div>
           </div>
         </div>
       </header>
 
-      <nav className="bg-white border-t">
+      <nav className="border-t" style={{ backgroundColor: "#F2F3F2" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center gap-12 py-6">
             <a
-              href="/"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer transition-colors"
+              href="/s/water"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
             >
-              <img
-                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
-                alt="Oasis Direct"
-                className="w-6 h-6"
-              />
-              <span className="font-medium">Oasis Direct</span>
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                <img
+                  alt="Water"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.water")}</span>
+            </a>
+            <a
+              href="/s/juice"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200 transition-all duration-300">
+                <img
+                  alt="Juice"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.juice")}</span>
+            </a>
+            <a
+              href="/s/dairy"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300">
+                <img
+                  alt="Dairy"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.dairy")}</span>
+            </a>
+            <a
+              href="/s/accessories"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
+                <img
+                  alt="Accessories"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.accessories")}</span>
             </a>
           </div>
         </div>
@@ -322,11 +371,11 @@ export default function CategoryPage({ params }: { params: { category: string } 
                 {filteredAndSortedProducts.map((product) => (
                   <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardContent className="p-3 md:p-4">
-                      <div className="relative mb-4">
+                      <div className="relative mb-4" onClick={() => handleProductClick(product)}>
                         <img
                           src={product.image || "/placeholder.svg"}
                           alt={isRTL ? product.nameAr || product.name : product.name}
-                          className="w-full h-40 md:h-48 object-cover rounded-lg"
+                          className="w-full h-40 md:h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                         />
                         {product.isNew && <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>}
                         {product.discount && (
@@ -334,7 +383,10 @@ export default function CategoryPage({ params }: { params: { category: string } 
                         )}
                       </div>
 
-                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm md:text-base">
+                      <h3
+                        className="font-medium text-gray-900 mb-2 line-clamp-2 text-sm md:text-base cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={() => handleProductClick(product)}
+                      >
                         {isRTL ? product.nameAr || product.name : product.name}
                       </h3>
 
@@ -372,13 +424,9 @@ export default function CategoryPage({ params }: { params: { category: string } 
                         <Button
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-xs md:text-sm px-2 md:px-4"
-                          onClick={() => {
-                            for (let i = 0; i < getQuantity(product.id); i++) {
-                              handleAddToCart(product)
-                            }
-                          }}
+                          onClick={() => handleAddToCart(product)}
                         >
-                          Add to Cart
+                          {t("product.addToCart")}
                         </Button>
                       </div>
                     </CardContent>
@@ -405,9 +453,6 @@ export default function CategoryPage({ params }: { params: { category: string } 
           </div>
         </div>
       </div>
-
-      {/* Footer - Same as main page */}
-      
     </div>
   )
 }

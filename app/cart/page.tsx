@@ -35,8 +35,7 @@ export default function CartPage() {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
-      {/* Top Header */}
-      <div className="bg-blue-600 text-white py-2 px-4">
+      <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
             <div className="relative" ref={languageRef}>
@@ -92,8 +91,7 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className="shadow-sm header-gradient">
+      <header className="bg-white shadow-sm" style={{ minHeight: "55px" }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-center min-h-[55px]">
             <Link href="/" className="flex items-center cursor-pointer">
@@ -109,48 +107,68 @@ export default function CartPage() {
         </div>
       </header>
 
-      {/* Category Navigation */}
-      <nav className="bg-white border-t">
+      <nav className="border-t" style={{ backgroundColor: "#F2F3F2" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center gap-8 py-4">
-            <Link href="/s/water" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Water"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.water")}</span>
+          <div className="flex items-center justify-center gap-12 py-6">
+            <Link
+              href="/s/water"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Water"
+                  width={40}
+                  height={40}
+                  className="transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.water")}</span>
             </Link>
-            <Link href="/s/juice" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Juice"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.juice")}</span>
+            <Link
+              href="/s/juice"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Juice"
+                  width={40}
+                  height={40}
+                  className="transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.juice")}</span>
             </Link>
-            <Link href="/s/dairy" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <Image
-                src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Dairy"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.dairy")}</span>
+            <Link
+              href="/s/dairy"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Dairy"
+                  width={40}
+                  height={40}
+                  className="transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.dairy")}</span>
             </Link>
             <Link
               href="/s/accessories"
-              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
             >
-              <Image
-                src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
-                alt="Accessories"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">{t("nav.accessories")}</span>
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
+                <Image
+                  src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                  alt="Accessories"
+                  width={40}
+                  height={40}
+                  className="transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.accessories")}</span>
             </Link>
           </div>
         </div>

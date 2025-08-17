@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useCart } from "@/hooks/useCart"
 import { useLocale } from "@/contexts/LocaleContext"
@@ -19,87 +19,86 @@ import {
   Mail,
   Minus,
   Plus,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Breadcrumb from "@/components/Breadcrumb"
-
-// Mock product data matching the screenshot
-const productData = {
-  1: {
-    id: 1,
-    name: "Bulk Offer Oasis Still 330 ml Pack of 24 (Bundle of 2 Packs)",
-    price: 22.85,
-    originalPrice: 28.56,
-    images: ["/oasis-water-bottles-pack.png", "/oasis-water-bottles-carton.png"],
-    category: "water",
-    brand: "oasis",
-    isNew: false,
-    discount: "20%",
-    description:
-      "Premium Oasis still water in convenient 330ml bottles. Perfect for home, office, or on-the-go hydration. This bulk offer includes 2 packs of 24 bottles each (48 bottles total) at an amazing discount.",
-    inStock: true,
-    sku: "OAS-BULK-330ML-48",
-    hasBulkDeal: true,
-  },
-}
-
-const suggestedProducts = [
-  {
-    id: 2,
-    name: "Oasis Zero Sodium Free 5 Gallon",
-    price: 11.43,
-    originalPrice: null,
-    image: "/oasis-5-gallon-blue.png",
-    isNew: true,
-    discount: null,
-  },
-  {
-    id: 3,
-    name: "Oasis 5 Gallon",
-    price: 9.52,
-    originalPrice: 10.47,
-    image: "/oasis-5-gallon-blue.png",
-    isNew: false,
-    discount: "-9%",
-  },
-  {
-    id: 4,
-    name: "Oasis 4 Gallon",
-    price: 11.42,
-    originalPrice: 12.38,
-    image: "/oasis-5-gallon-blue.png",
-    isNew: false,
-    discount: "-8%",
-  },
-  {
-    id: 5,
-    name: "Oasis 1Gallon - Carton of 6",
-    price: 14.28,
-    originalPrice: null,
-    image: "/oasis-water-bottles-carton.png",
-    isNew: false,
-    discount: null,
-  },
-]
+import { fetchAllProducts, type Product } from "@/lib/api"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [showShareMenu, setShowShareMenu] = useState(false)
-  const { addToCart } = useCart()
-  const { locale, t } = useLocale()
+  const [product, setProduct] = useState<Product | null>(null)
+  const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { state: cartState, dispatch: cartDispatch } = useCart()
+  const { locale, t, isRTL } = useLocale()
 
-  const product = productData[params.id as keyof typeof productData] || productData[1]
+  useEffect(() => {
+    const loadProduct = async () => {
+      setIsLoading(true)
+      try {
+        console.log("[v0] Loading product with ID:", params.id)
+        const allProducts = await fetchAllProducts()
+        console.log("[v0] All products loaded:", allProducts.length)
+
+        const foundProduct = allProducts.find((p) => p.id.toString() === params.id)
+        console.log("[v0] Found product:", foundProduct)
+
+        if (foundProduct) {
+          setProduct(foundProduct)
+          // Get suggested products from same category
+          const suggested = allProducts
+            .filter((p) => p.category === foundProduct.category && p.id !== foundProduct.id)
+            .slice(0, 4)
+          setSuggestedProducts(suggested)
+        }
+      } catch (error) {
+        console.error("[v0] Error loading product:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProduct()
+  }, [params.id])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <span className="text-gray-600">Loading product...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h1>
+          <p className="text-gray-600 mb-4">The product you're looking for doesn't exist.</p>
+          <Link href="/" className="text-blue-600 hover:text-blue-700">
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
+    const images = product.images || [product.image]
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
   }
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
+    const images = product.images || [product.image]
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
   const increaseQuantity = () => {
@@ -111,64 +110,87 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   }
 
   const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0],
-      quantity: quantity,
-    })
+    for (let i = 0; i < quantity; i++) {
+      cartDispatch({
+        type: "ADD_ITEM",
+        payload: {
+          id: product.id,
+          name: isRTL ? product.nameAr || product.name : product.name,
+          price: product.price,
+          originalPrice: product.originalPrice || undefined,
+          image: product.image,
+          category: product.category,
+          brand: product.brand,
+        },
+      })
+    }
   }
 
   const breadcrumbItems = [
-    { label: t("home"), href: "/" },
-    { label: t("water"), href: "/s/water" },
-    { label: product.name, href: `/product/${product.id}` },
+    { label: "Oasis Direct", labelAr: "أوازيس دايركت", href: "/" },
+    { label: product.category, labelAr: product.categoryAr || product.category, href: `/s/${product.category}` },
+    { label: isRTL ? product.nameAr || product.name : product.name, labelAr: product.nameAr || product.name },
   ]
 
+  const productImages = product.images || [product.image]
+
   return (
-    <div className={`min-h-screen bg-gray-50 ${locale === "ar" ? "rtl" : "ltr"}`}>
-      {/* Top Header */}
-      <div className="bg-blue-600 text-white py-2 px-4">
+    <div className={`min-h-screen bg-gray-50 ${isRTL ? "rtl" : "ltr"}`}>
+      <div className="text-white py-2 px-4" style={{ background: "linear-gradient(to right, #2871A5, #243464)" }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <span>{locale === "ar" ? "العربية" : "English"}</span>
-            <ChevronDown className="w-4 h-4" />
+            <div className="relative">
+              <button className="flex items-center gap-1 hover:text-blue-200 cursor-pointer">
+                <span>{locale === "ar" ? "العربية" : "English"}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <Phone className="w-4 h-4" />
-            <MessageCircle className="w-4 h-4" />
+            <Phone className="w-4 h-4 cursor-pointer hover:text-blue-200" />
+            <MessageCircle className="w-4 h-4 cursor-pointer hover:text-blue-200" />
           </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm" style={{ minHeight: "55px" }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center">
-              <img src="/oasis-logo-blue.png" alt="Oasis Direct" className="h-12" />
+              <img
+                src="https://oasisdirect.ae/Oasis_Direct_BLUE_EN.png?w=3840&q=75"
+                alt="Oasis Direct"
+                className="h-12"
+              />
             </Link>
 
             <div className="flex-1 max-w-2xl mx-8 relative">
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder={t("searchPlaceholder")}
+                  placeholder={t("header.searchPlaceholder")}
                   className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg"
                 />
-                <Button size="sm" className="absolute right-1 top-1 bottom-1 bg-blue-600 hover:bg-blue-700">
-                  <Search className="w-4 h-4" />
+                <Button
+                  size="sm"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent hover:bg-gray-100 p-1"
+                >
+                  <Search className="w-4 h-4 text-gray-500" />
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 bg-transparent"
+                onClick={() => (window.location.href = "/cart")}
+              >
                 <ShoppingCart className="w-4 h-4" />
-                <span className="hidden sm:inline">{t("cart")}</span>
+                <span className="hidden sm:inline">{t("header.cart")}</span>
                 <Badge variant="secondary" className="ml-1">
-                  0
+                  {cartState.itemCount}
                 </Badge>
               </Button>
             </div>
@@ -176,35 +198,69 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         </div>
       </header>
 
-      {/* Navigation Menu */}
-      <nav className="bg-white border-t">
+      <nav className="border-t" style={{ backgroundColor: "#F2F3F2" }}>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center gap-8 py-4">
-            <Link href="/s/water" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <img src="/placeholder.svg?height=24&width=24" alt="Water" className="w-6 h-6" />
-              <span className="font-medium">{t("water")}</span>
+          <div className="flex items-center justify-center gap-12 py-6">
+            <Link
+              href="/s/water"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                <img
+                  alt="Water"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925166059_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.water")}</span>
             </Link>
-            <Link href="/s/juice" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <img src="/placeholder.svg?height=24&width=24" alt="Juice" className="w-6 h-6" />
-              <span className="font-medium">{t("juice")}</span>
+            <Link
+              href="/s/juice"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-50 to-orange-100 group-hover:from-orange-100 group-hover:to-orange-200 transition-all duration-300">
+                <img
+                  alt="Juice"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643925178667_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.juice")}</span>
             </Link>
-            <Link href="/s/dairy" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-              <img src="/placeholder.svg?height=24&width=24" alt="Dairy" className="w-6 h-6" />
-              <span className="font-medium">{t("dairy")}</span>
+            <Link
+              href="/s/dairy"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
+            >
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300">
+                <img
+                  alt="Dairy"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891145147_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.dairy")}</span>
             </Link>
             <Link
               href="/s/accessories"
-              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer"
+              className="flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg text-gray-600 hover:text-blue-600 hover:bg-white/50 cursor-pointer group"
             >
-              <img src="/placeholder.svg?height=24&width=24" alt="Accessories" className="w-6 h-6" />
-              <span className="font-medium">{t("accessories")}</span>
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 group-hover:from-purple-100 group-hover:to-purple-200 transition-all duration-300">
+                <img
+                  alt="Accessories"
+                  className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
+                  src="https://nfpc.imgix.net/files/1643891204025_image.png?fit=contain&h=45&w=45&auto=format,compress"
+                />
+              </div>
+              <span className="font-semibold text-lg">{t("nav.accessories")}</span>
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Breadcrumb */}
-      <Breadcrumb items={breadcrumbItems} />
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
 
       {/* Product Detail */}
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -212,23 +268,23 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {/* Product Images */}
           <div className="space-y-4">
             <div className="relative bg-blue-100 rounded-lg overflow-hidden aspect-square">
-              {product.hasBulkDeal && (
+              {product.discount && (
                 <div className="absolute top-4 left-4 z-10">
                   <div className="bg-pink-500 text-white px-6 py-3 rounded-lg transform -rotate-12 shadow-lg">
-                    <div className="text-xl font-bold">Bulk Deals</div>
-                    <div className="text-lg">20% off</div>
+                    <div className="text-xl font-bold">Special Offer</div>
+                    <div className="text-lg">{product.discount}</div>
                   </div>
                 </div>
               )}
 
               <img
-                src={product.images[currentImageIndex] || "/placeholder.svg"}
-                alt={product.name}
+                src={productImages[currentImageIndex] || "/placeholder.svg"}
+                alt={isRTL ? product.nameAr || product.name : product.name}
                 className="w-full h-full object-cover"
               />
 
               {/* Navigation Arrows */}
-              {product.images.length > 1 && (
+              {productImages.length > 1 && (
                 <>
                   <Button
                     variant="outline"
@@ -251,9 +307,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
 
             {/* Thumbnail Images */}
-            {product.images.length > 1 && (
+            {productImages.length > 1 && (
               <div className="flex gap-2">
-                {product.images.map((image, index) => (
+                {productImages.map((image, index) => (
                   <button
                     key={index}
                     className={`w-20 h-20 rounded-lg overflow-hidden border-2 cursor-pointer ${
@@ -275,7 +331,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                {isRTL ? product.nameAr || product.name : product.name}
+              </h1>
 
               <div className="flex items-center gap-4 mb-6">
                 {product.originalPrice && (
@@ -341,128 +399,66 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       </div>
 
       {/* Suggested Products */}
-      <div className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Suggested Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {suggestedProducts.map((suggestedProduct) => (
-              <Card key={suggestedProduct.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-4">
-                  <Link href={`/product/${suggestedProduct.id}`} className="block cursor-pointer">
-                    <div className="relative mb-4">
-                      <img
-                        src={suggestedProduct.image || "/placeholder.svg"}
-                        alt={suggestedProduct.name}
-                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                      />
-                      {suggestedProduct.isNew && (
-                        <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>
-                      )}
-                      {suggestedProduct.discount && (
-                        <Badge className="absolute top-2 left-2 bg-green-500 text-white">
-                          {suggestedProduct.discount}
-                        </Badge>
-                      )}
-                    </div>
+      {suggestedProducts.length > 0 && (
+        <div className="bg-white">
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Suggested Products</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {suggestedProducts.map((suggestedProduct) => (
+                <Card key={suggestedProduct.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <Link href={`/product/${suggestedProduct.id}`} className="block cursor-pointer">
+                      <div className="relative mb-4">
+                        <img
+                          src={suggestedProduct.image || "/placeholder.svg"}
+                          alt={isRTL ? suggestedProduct.nameAr || suggestedProduct.name : suggestedProduct.name}
+                          className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        />
+                        {suggestedProduct.isNew && (
+                          <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>
+                        )}
+                        {suggestedProduct.discount && (
+                          <Badge className="absolute top-2 left-2 bg-green-500 text-white">
+                            {suggestedProduct.discount}
+                          </Badge>
+                        )}
+                      </div>
 
-                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 cursor-pointer">
-                      {suggestedProduct.name}
-                    </h3>
+                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 cursor-pointer">
+                        {isRTL ? suggestedProduct.nameAr || suggestedProduct.name : suggestedProduct.name}
+                      </h3>
 
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg font-bold text-green-600">AED {suggestedProduct.price}</span>
-                      {suggestedProduct.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">AED {suggestedProduct.originalPrice}</span>
-                      )}
-                    </div>
-                  </Link>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg font-bold text-green-600">AED {suggestedProduct.price}</span>
+                        {suggestedProduct.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">
+                            AED {suggestedProduct.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Button variant="outline" size="sm" className="cursor-pointer bg-transparent">
-                        <Minus className="w-4 h-4" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Button variant="outline" size="sm" className="cursor-pointer bg-transparent">
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="px-3 py-1 border rounded">1</span>
+                        <Button variant="outline" size="sm" className="cursor-pointer bg-transparent">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                        Add to Cart
                       </Button>
-                      <span className="px-3 py-1 border rounded">1</span>
-                      <Button variant="outline" size="sm" className="cursor-pointer bg-transparent">
-                        <Plus className="w-4 h-4" />
-                      </Button>
                     </div>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
-                      Add to Cart
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">GET THE APP</h3>
-              <p className="text-blue-100 mb-4">
-                Oasis Direct App is now available in Google Play, App Store, and AppGallery. Get it Now!
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">CONTACT INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p>
-                  <strong>ADDRESS</strong>
-                </p>
-                <p>Oasis Pure Water Factory LLC Jebel Ali Dubai, United Arab Emirates</p>
-                <p>
-                  <strong>TEL</strong>
-                </p>
-                <p>600522261</p>
-                <p>
-                  <strong>EMAIL</strong>
-                </p>
-                <p>Oasis.H2o@Nfpc.Net</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">COLLECTIONS</h3>
-              <div className="space-y-2 text-blue-100">
-                <Link href="/s/water" className="block hover:text-white cursor-pointer">
-                  Water
-                </Link>
-                <Link href="/s/juice" className="block hover:text-white cursor-pointer">
-                  Juice
-                </Link>
-                <Link href="/s/dairy" className="block hover:text-white cursor-pointer">
-                  Dairy
-                </Link>
-                <Link href="/s/accessories" className="block hover:text-white cursor-pointer">
-                  Accessories
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-lg mb-4">INFORMATION</h3>
-              <div className="space-y-2 text-blue-100">
-                <p className="cursor-pointer hover:text-white">Our Oasis Website</p>
-                <p className="cursor-pointer hover:text-white">About Us</p>
-                <p className="cursor-pointer hover:text-white">Contact Us</p>
-                <p className="cursor-pointer hover:text-white">Terms And Conditions</p>
-                <p className="cursor-pointer hover:text-white">Privacy Policy</p>
-                <p className="cursor-pointer hover:text-white">FAQs</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-blue-500 mt-8 pt-8 text-center text-blue-100">
-            <p>Copyright © Oasis Direct. All Rights Reserved. - 2025</p>
-          </div>
-        </div>
-      </footer>
+      )}
     </div>
   )
 }

@@ -66,6 +66,17 @@ const translations = {
     "checkout.success": "Payment Successful!",
     "checkout.successMessage": "Your order has been placed successfully.",
     "checkout.redirecting": "Redirecting to home page...",
+    "checkout.checkout": "Checkout",
+    "checkout.enterFirstName": "Enter your first name",
+    "checkout.enterLastName": "Enter your last name",
+    "checkout.enterEmail": "Enter your email address",
+    "checkout.enterStreetAddress": "Enter your street address",
+    "checkout.enterCity": "Enter your city",
+    "checkout.enterArea": "Enter your area or district",
+    "checkout.enterBuilding": "Enter building or villa number",
+    "checkout.enterApartment": "Enter apartment or floor number",
+    "checkout.enterLandmark": "Enter nearby landmark",
+    "checkout.productQuantity": "Product quantity",
   },
   ar: {
     // Header
@@ -121,13 +132,36 @@ const translations = {
     "checkout.success": "تم الدفع بنجاح!",
     "checkout.successMessage": "تم تقديم طلبك بنجاح.",
     "checkout.redirecting": "إعادة التوجيه إلى الصفحة الرئيسية...",
+    "checkout.checkout": "الدفع",
+    "checkout.enterFirstName": "أدخل اسمك الأول",
+    "checkout.enterLastName": "أدخل اسم العائلة",
+    "checkout.enterEmail": "أدخل عنوان بريدك الإلكتروني",
+    "checkout.enterStreetAddress": "أدخل عنوان الشارع",
+    "checkout.enterCity": "أدخل المدينة",
+    "checkout.enterArea": "أدخل المنطقة أو الحي",
+    "checkout.enterBuilding": "أدخل رقم المبنى أو الفيلا",
+    "checkout.enterApartment": "أدخل رقم الشقة أو الطابق",
+    "checkout.enterLandmark": "أدخل معلم قريب",
+    "checkout.productQuantity": "كمية المنتج",
   },
 }
 
 const LocaleContext = createContext<LocaleContextType | null>(null)
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>("en")
+  const [locale, setLocaleState] = useState<Locale>("en")
+
+  useEffect(() => {
+    const savedLocale = localStorage.getItem("oasis-locale") as Locale
+    if (savedLocale && (savedLocale === "en" || savedLocale === "ar")) {
+      setLocaleState(savedLocale)
+    }
+  }, [])
+
+  const setLocale = (newLocale: Locale) => {
+    setLocaleState(newLocale)
+    localStorage.setItem("oasis-locale", newLocale)
+  }
 
   const t = (key: string): string => {
     return translations[locale][key as keyof (typeof translations)[typeof locale]] || key

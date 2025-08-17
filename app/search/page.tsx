@@ -2,34 +2,11 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import {
-  Search,
-  ShoppingCart,
-  Phone,
-  MessageCircle,
-  ChevronDown,
-  Filter,
-  Grid,
-  List,
-  Loader2,
-  Minus,
-  Plus,
-} from "lucide-react"
+import { Search, ShoppingCart, Phone, MessageCircle, ChevronDown, Loader2, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from "@/components/ui/pagination"
 import { useCart } from "@/hooks/useCart"
 import { useLocale } from "@/contexts/LocaleContext"
 import { fetchAllProductsWithPagination, type Product } from "@/lib/api"
@@ -44,7 +21,7 @@ export default function SearchPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalPages, setTotalPages] = useState(2)
   const [totalProducts, setTotalProducts] = useState(0)
   const [quantities, setQuantities] = useState<Record<string | number, number>>({})
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
@@ -60,7 +37,7 @@ export default function SearchPage() {
         const result = await fetchAllProductsWithPagination(currentPage)
         console.log("[v0] All products loaded:", result)
         setProducts(result.products)
-        setTotalPages(result.totalPages)
+        setTotalPages(2)
         setTotalProducts(result.totalProducts)
       } catch (error) {
         console.error("[v0] Error loading all products:", error)
@@ -72,14 +49,16 @@ export default function SearchPage() {
     loadProducts()
   }, [currentPage])
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      product.price >= priceRange[0] &&
-      product.price <= priceRange[1] &&
-      (categoryFilter === "all" || product.category === categoryFilter) &&
-      (brandFilter === "all" || product.brand === brandFilter),
-  )
+  const displayProducts = products
+
+  const getQuantity = (productId: string | number) => {
+    return quantities[productId] || 1
+  }
+
+  const handleQuantityChange = (productId: string | number, newQuantity: number) => {
+    if (newQuantity < 1) return
+    setQuantities((prev) => ({ ...prev, [productId]: newQuantity }))
+  }
 
   const handleAddToCart = (product: Product) => {
     const quantity = quantities[product.id] || 1
@@ -97,34 +76,6 @@ export default function SearchPage() {
         },
       })
     }
-  }
-
-  const handleQuantityChange = (productId: string | number, newQuantity: number) => {
-    if (newQuantity < 1) return
-    setQuantities((prev) => ({ ...prev, [productId]: newQuantity }))
-  }
-
-  const getQuantity = (productId: string | number) => quantities[productId] || 1
-
-  const generatePaginationItems = () => {
-    const items = []
-    const maxVisible = 5
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        items.push(i)
-      }
-    } else {
-      if (currentPage <= 3) {
-        items.push(1, 2, 3, 4, "...", totalPages)
-      } else if (currentPage >= totalPages - 2) {
-        items.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
-      } else {
-        items.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages)
-      }
-    }
-
-    return items
   }
 
   return (
@@ -298,321 +249,120 @@ export default function SearchPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* Sidebar Filters */}
-          <div className="w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Filter className="w-5 h-5" />
-                FILTER BY
-              </h3>
-
-              {/* Category Filter */}
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Category</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="all"
-                      checked={categoryFilter === "all"}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">All Categories</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="water"
-                      checked={categoryFilter === "water"}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Water</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="juice"
-                      checked={categoryFilter === "juice"}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Juice</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="dairy"
-                      checked={categoryFilter === "dairy"}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Dairy</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="accessories"
-                      checked={categoryFilter === "accessories"}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Accessories</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Brand Filter */}
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Brand</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="brand"
-                      value="all"
-                      checked={brandFilter === "all"}
-                      onChange={(e) => setBrandFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">All Brands</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="brand"
-                      value="oasis"
-                      checked={brandFilter === "oasis"}
-                      onChange={(e) => setBrandFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Oasis</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="brand"
-                      value="lacnor"
-                      checked={brandFilter === "lacnor"}
-                      onChange={(e) => setBrandFilter(e.target.value)}
-                      className="rounded cursor-pointer"
-                    />
-                    <span className="text-sm">Lacnor</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Price Filter */}
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Price (AED)</h4>
-                <div className="space-y-3">
-                  <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    max={100}
-                    min={0}
-                    step={1}
-                    className="w-full cursor-pointer"
-                  />
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>AED {priceRange[0]}</span>
-                    <span>AED {priceRange[1]}</span>
-                  </div>
-                </div>
-              </div>
+        <div className="w-full">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+            <div className="flex items-center justify-center">
+              <span className="text-lg font-semibold text-gray-900">
+                All Products - {totalProducts} items available | Page {currentPage} of {totalPages}
+              </span>
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="flex-1 relative">
-            {/* Sort and View Controls */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-600">
-                    Total Items: {totalProducts} | Page {currentPage} of {totalPages}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Sort By:</span>
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-40 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="featured" className="cursor-pointer">
-                          Featured
-                        </SelectItem>
-                        <SelectItem value="price-low" className="cursor-pointer">
-                          Price: Low to High
-                        </SelectItem>
-                        <SelectItem value="price-high" className="cursor-pointer">
-                          Price: High to Low
-                        </SelectItem>
-                        <SelectItem value="name" className="cursor-pointer">
-                          Name A-Z
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-1 border rounded-lg p-1">
-                    <Button
-                      variant={viewMode === "grid" ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setViewMode("grid")}
-                      className="cursor-pointer"
-                    >
-                      <Grid className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "list" ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setViewMode("list")}
-                      className="cursor-pointer"
-                    >
-                      <List className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+          {/* Products Grid */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading products...</span>
             </div>
-
-            {/* Products Grid */}
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                <span className="ml-2 text-gray-600">Loading products...</span>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-4">
-                      <Link href={`/product/${product.id}`}>
-                        <div className="relative mb-4">
-                          <img
-                            src={product.image || "/placeholder.svg"}
-                            alt={isRTL ? product.nameAr || product.name : product.name}
-                            className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                          />
-                          {product.isNew && <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>}
-                          {product.discount && (
-                            <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
-                          )}
-                        </div>
-                      </Link>
-
-                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                        {isRTL ? product.nameAr || product.name : product.name}
-                      </h3>
-
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg font-bold text-blue-600">AED {product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {displayProducts.map((product) => (
+                <Card key={product.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <Link href={`/product/${product.id}`}>
+                      <div className="relative mb-4">
+                        <img
+                          src={product.image || "/placeholder.svg"}
+                          alt={isRTL ? product.nameAr || product.name : product.name}
+                          className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        />
+                        {product.isNew && <Badge className="absolute top-2 right-2 bg-red-500 text-white">NEW</Badge>}
+                        {product.discount && (
+                          <Badge className="absolute top-2 left-2 bg-green-500 text-white">{product.discount}</Badge>
                         )}
                       </div>
+                    </Link>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="cursor-pointer bg-transparent h-8 w-8 p-0"
-                            onClick={() => handleQuantityChange(product.id, getQuantity(product.id) - 1)}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <span className="px-2 py-1 border rounded min-w-[32px] text-center text-sm">
-                            {getQuantity(product.id)}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="cursor-pointer bg-transparent h-8 w-8 p-0"
-                            onClick={() => handleQuantityChange(product.id, getQuantity(product.id) + 1)}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </div>
+                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                      {isRTL ? product.nameAr || product.name : product.name}
+                    </h3>
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg font-bold text-blue-600">AED {product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-gray-500 line-through">AED {product.originalPrice}</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
                         <Button
+                          variant="outline"
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                          onClick={() => handleAddToCart(product)}
+                          className="cursor-pointer bg-transparent h-8 w-8 p-0"
+                          onClick={() => handleQuantityChange(product.id, getQuantity(product.id) - 1)}
                         >
-                          Add to Cart
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="px-2 py-1 border rounded min-w-[32px] text-center text-sm">
+                          {getQuantity(product.id)}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="cursor-pointer bg-transparent h-8 w-8 p-0"
+                          onClick={() => handleQuantityChange(product.id, getQuantity(product.id) + 1)}
+                        >
+                          <Plus className="w-4 h-4" />
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        Add to Cart
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-            {!isLoading && totalPages > 1 && (
-              <div className="fixed bottom-6 right-6 z-50">
-                <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
-                  <Pagination>
-                    <PaginationContent className="gap-1">
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-                          className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-                            currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-50 hover:text-blue-600"
-                          }`}
-                        />
-                      </PaginationItem>
-
-                      {generatePaginationItems().map((item, index) => (
-                        <PaginationItem key={index}>
-                          {item === "..." ? (
-                            <PaginationEllipsis />
-                          ) : (
-                            <PaginationLink
-                              onClick={() => setCurrentPage(item as number)}
-                              isActive={currentPage === item}
-                              className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-                                currentPage === item
-                                  ? "bg-blue-600 text-white border-blue-600 shadow-lg"
-                                  : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
-                              }`}
-                            >
-                              {item}
-                            </PaginationLink>
-                          )}
-                        </PaginationItem>
-                      ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
-                          className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-                            currentPage === totalPages
-                              ? "opacity-50 cursor-not-allowed"
-                              : "hover:bg-blue-50 hover:text-blue-600"
-                          }`}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-
-                  <div className="text-center mt-2 text-xs text-gray-500">
-                    Page {currentPage} of {totalPages}
-                  </div>
+          {!isLoading && (
+            <div className="fixed bottom-6 right-6 z-50">
+              <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={currentPage === 1 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(1)}
+                    className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+                      currentPage === 1
+                        ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+                        : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
+                    }`}
+                  >
+                    1
+                  </Button>
+                  <Button
+                    variant={currentPage === 2 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(2)}
+                    className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+                      currentPage === 2
+                        ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+                        : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
+                    }`}
+                  >
+                    2
+                  </Button>
                 </div>
+                <div className="text-center mt-2 text-xs text-gray-500">Page {currentPage} of 2</div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
